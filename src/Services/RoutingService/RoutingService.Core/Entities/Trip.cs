@@ -1,12 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RoutingService.Core.Entities
 {
-    internal class Trip
+    public class Trip
     {
+        public int TripId { get; set; }
+        public int SheetId { get; set; }
+        public TimeSpan ScheduledDeparture { get; set; }
+        public TimeSpan? ActualDeparture { get; set; }
+        public bool Completed { get; set; }
+
+        // Navigation properties
+        public virtual RouteSheet RouteSheet { get; set; } = null!;
     }
 }

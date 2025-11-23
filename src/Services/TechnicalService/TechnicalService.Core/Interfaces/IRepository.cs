@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace TechnicalService.Core.Interfaces;
 
-namespace TechnicalService.Core.Interfaces
+public interface IRepository<T> where T : class
 {
-    internal interface IRepository
-    {
-    }
+    Task<IEnumerable<T>> GetAllAsync();
+    Task<T?> GetByIdAsync(object id);
+    Task<int> AddAsync(T entity);
+    Task<int> UpdateAsync(T entity);
+    Task<int> DeleteAsync(object id);
 }

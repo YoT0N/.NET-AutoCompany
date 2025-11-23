@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace TechnicalService.Core.Entities;
 
-namespace TechnicalService.Core.Entities
+public class ExaminationRepairPart
 {
-    internal class ExaminationRepairPart
-    {
-    }
+    public long ExaminationId { get; set; }
+    public int PartId { get; set; }
+    public int Quantity { get; set; }
+    public decimal? TotalPrice { get; set; }
+
+    // Navigation properties
+    public TechnicalExamination? Examination { get; set; }
+    public RepairPart? Part { get; set; }
 }

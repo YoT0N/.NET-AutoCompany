@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\RoutingService.Core\RoutingService.Core.csproj" />
+    <ProjectReference Include="..\RoutingService.Infrastructure\RoutingService.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>

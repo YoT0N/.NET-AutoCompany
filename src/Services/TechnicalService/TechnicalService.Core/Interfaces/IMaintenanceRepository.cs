@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using TechnicalService.Core.Entities;
 
-namespace TechnicalService.Core.Interfaces
+namespace TechnicalService.Core.Interfaces;
+
+public interface IMaintenanceRepository : IRepository<BusMaintenanceHistory>
 {
-    internal interface IMaintenanceRepository
-    {
-    }
+    Task<IEnumerable<BusMaintenanceHistory>> GetMaintenanceByBusAsync(string countryNumber);
+    Task<decimal> GetTotalMaintenanceCostAsync(string countryNumber);
+    Task<IEnumerable<BusMaintenanceHistory>> GetUpcomingMaintenanceAsync(DateTime fromDate);
 }

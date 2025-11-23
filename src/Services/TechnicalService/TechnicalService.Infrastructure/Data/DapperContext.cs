@@ -1,12 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.Configuration;
+using MySql.Data.MySqlClient;
+using System.Configuration;
+using System.Data;
 
-namespace TechnicalService.Infrastructure.Data
+namespace TechnicalService.Infrastructure.Data;
+
+public class DapperContext
 {
-    internal class DapperContext
+    private readonly string _connectionString;
+
+    public DapperContext(IConfiguration configuration)
     {
+        _connectionString = configuration.GetConnectionString("DefaultConnection");
     }
+
+    public IDbConnection CreateConnection()
+        => new MySqlConnection(_connectionString);
 }

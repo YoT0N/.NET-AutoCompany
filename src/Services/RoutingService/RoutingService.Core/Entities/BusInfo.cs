@@ -1,12 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace RoutingService.Core.Entities
 {
-    internal class BusInfo
+    public class BusInfo
     {
+        public int BusId { get; set; }
+        public string CountryNumber { get; set; } = string.Empty;
+        public string? Brand { get; set; }
+        public int? Capacity { get; set; }
+        public int? YearOfManufacture { get; set; }
+
+        // Navigation properties
+        public virtual ICollection<RouteSheet> RouteSheets { get; set; } = new List<RouteSheet>();
     }
 }

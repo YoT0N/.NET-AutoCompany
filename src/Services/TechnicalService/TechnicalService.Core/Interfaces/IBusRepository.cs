@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using TechnicalService.Core.Entities;
 
-namespace TechnicalService.Core.Interfaces
+namespace TechnicalService.Core.Interfaces;
+
+public interface IBusRepository : IRepository<Bus>
 {
-    internal interface IBusRepository
-    {
-    }
+    Task<IEnumerable<Bus>> GetBusesByStatusAsync(int statusId);
+    Task<Bus?> GetBusWithStatusAsync(string countryNumber);
+    Task<IEnumerable<Bus>> GetActiveBusesAsync();
+    Task<int> UpdateBusStatusAsync(string countryNumber, int newStatusId);
+    Task<decimal> GetTotalMileageAsync(string countryNumber);
 }

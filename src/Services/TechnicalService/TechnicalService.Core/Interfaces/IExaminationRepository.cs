@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using TechnicalService.Core.Entities;
 
-namespace TechnicalService.Core.Interfaces
+namespace TechnicalService.Core.Interfaces;
+
+public interface IExaminationRepository : IRepository<TechnicalExamination>
 {
-    internal interface IExaminationRepository
-    {
-    }
+    Task<IEnumerable<TechnicalExamination>> GetExaminationsByBusAsync(string countryNumber);
+    Task<IEnumerable<TechnicalExamination>> GetFailedExaminationsAsync();
+    Task<TechnicalExamination?> GetExaminationWithPartsAsync(long examinationId);
+    Task<long> CreateExaminationWithPartsAsync(TechnicalExamination examination,
+        List<ExaminationRepairPart> parts);
 }

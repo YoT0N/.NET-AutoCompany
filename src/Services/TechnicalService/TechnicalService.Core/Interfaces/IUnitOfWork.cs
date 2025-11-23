@@ -1,12 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace TechnicalService.Core.Interfaces;
 
-namespace TechnicalService.Core.Interfaces
+public interface IUnitOfWork : IDisposable
 {
-    internal interface IUnitOfWork
-    {
-    }
+    IBusRepository Buses { get; }
+    IExaminationRepository Examinations { get; }
+    IMaintenanceRepository Maintenance { get; }
+    IRepairPartRepository RepairParts { get; }
+
+    Task<int> SaveChangesAsync();
+    Task BeginTransactionAsync();
+    Task CommitAsync();
+    Task RollbackAsync();
 }

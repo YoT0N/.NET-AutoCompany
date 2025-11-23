@@ -1,12 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace RoutingService.Core.Entities
 {
-    internal class RouteStop
+    public class RouteStop
     {
+        public int StopId { get; set; }
+        public string StopName { get; set; } = string.Empty;
+        public decimal? Latitude { get; set; }
+        public decimal? Longitude { get; set; }
+
+        // Navigation properties
+        public virtual ICollection<RouteStopAssignment> RouteStopAssignments { get; set; } = new List<RouteStopAssignment>();
     }
 }

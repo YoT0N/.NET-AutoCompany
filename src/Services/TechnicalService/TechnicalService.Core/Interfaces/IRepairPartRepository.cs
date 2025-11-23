@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using TechnicalService.Core.Entities;
 
-namespace TechnicalService.Core.Interfaces
+namespace TechnicalService.Core.Interfaces;
+
+public interface IRepairPartRepository : IRepository<RepairPart>
 {
-    internal interface IRepairPartRepository
-    {
-    }
+    Task<IEnumerable<RepairPart>> GetLowStockPartsAsync(int threshold);
+    Task<int> UpdateStockQuantityAsync(int partId, int quantity);
+    Task<RepairPart?> GetByPartNumberAsync(string partNumber);
 }
