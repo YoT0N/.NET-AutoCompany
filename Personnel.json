@@ -1,0 +1,31 @@
+{
+  "_id": { "$oid": "675b1ecf1c1e8a001ed0c111" },
+  "personnelId": 101,
+  "fullName": "�������� �����",
+  "birthDate": "1988-04-15",
+  "position": "����",
+  "status": "Active",
+
+  "contacts": {
+    "phone": "+380501112233",
+    "email": "ivanenko@mail.com",
+    "address": "�. ����, ���. ��������� 15"
+  },
+
+  "documents": [
+    {
+      "type": "Passport",
+      "number": "��123456",
+      "issuedBy": "���",
+      "issuedOn": "2012-06-01"
+    },
+    {
+      "type": "License",
+      "category": "D",
+      "validUntil": "2028-07-01"
+    }
+  ],
+
+  "createdAt": "2024-11-18T08:20:00Z",
+  "updatedAt": "2024-11-18T08:20:00Z"
+}

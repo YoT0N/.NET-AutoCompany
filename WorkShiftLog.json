@@ -1,0 +1,19 @@
+{
+  "_id": { "$oid": "675b21981c1e8a001ed0c444" },
+  "personnelId": 101,
+  "shiftDate": "2024-11-18",
+  "startTime": "06:30",
+  "endTime": "14:20",
+
+  "bus": {
+    "busCountryNumber": "AA1234BB",
+    "brand": "Mercedes-Benz"
+  },
+
+  "route": {
+    "routeNumber": "12A",
+    "distanceKm": 12.5
+  },
+
+  "status": "Completed"
+}

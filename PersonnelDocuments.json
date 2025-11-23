@@ -1,0 +1,9 @@
+{
+  "_id": { "$oid": "675b20741c1e8a001ed0c333" },
+  "personnelId": 101,
+  "docType": "MedicalCertificate",
+  "fileName": "med_cert_2024.pdf",
+  "uploadedAt": "2024-09-01",
+  "issuedOn": "2024-08-12",
+  "validUntil": "2025-08-12"
+}

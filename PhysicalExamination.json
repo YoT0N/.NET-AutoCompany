@@ -1,0 +1,15 @@
+{
+  "_id": { "$oid": "675b1f3b1c1e8a001ed0c222" },
+  "personnelId": 101,
+  "examDate": "2024-10-01",
+  "result": "Fit",
+  "doctorName": "�������� �.�.",
+  "notes": "������������� �������� ����� 6 ������",
+
+  "metrics": {
+    "height": 178,
+    "weight": 82,
+    "bloodPressure": "120/80",
+    "vision": "1.0 / 1.0"
+  }
+}
