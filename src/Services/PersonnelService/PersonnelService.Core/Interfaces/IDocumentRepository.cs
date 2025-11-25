@@ -1,12 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using PersonnelService.Core.Models;
 
 namespace PersonnelService.Core.Interfaces
 {
-    internal interface IDocumentRepository
+    public interface IDocumentRepository
     {
+        Task<IEnumerable<PersonnelDocument>> GetAllAsync();
+        Task<PersonnelDocument?> GetByIdAsync(string id);
+        Task<IEnumerable<PersonnelDocument>> GetByPersonnelIdAsync(int personnelId);
+        Task<IEnumerable<PersonnelDocument>> GetByDocTypeAsync(string docType);
+        Task<IEnumerable<PersonnelDocument>> GetExpiredDocumentsAsync(DateTime beforeDate);
+        Task<IEnumerable<PersonnelDocument>> GetExpiringDocumentsAsync(DateTime withinDate);
+        Task<PersonnelDocument> CreateAsync(PersonnelDocument document);
+        Task<bool> UpdateAsync(string id, PersonnelDocument document);
+        Task<bool> DeleteAsync(string id);
+        Task<bool> DeleteByPersonnelIdAsync(int personnelId);
     }
 }

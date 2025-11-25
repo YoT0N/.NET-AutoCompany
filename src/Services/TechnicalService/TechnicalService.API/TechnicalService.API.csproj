@@ -6,6 +6,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="DotSwashbuckle.AspNetCore.SwaggerGen" Version="3.0.11" />
+    <PackageReference Include="DotSwashbuckle.AspNetCore.SwaggerUI" Version="3.0.11" />
+  </ItemGroup>
+
 	<ItemGroup>
 		<ProjectReference Include="..\TechnicalService.Application\TechnicalService.Application.csproj" />
 		<ProjectReference Include="..\TechnicalService.Infrastructure\TechnicalService.Infrastructure.csproj" />

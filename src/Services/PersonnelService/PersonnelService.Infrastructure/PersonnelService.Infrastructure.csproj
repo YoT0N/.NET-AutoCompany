@@ -6,4 +6,11 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" Version="3.3.0" />
+  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\PersonnelService.Core\PersonnelService.Core.csproj" />
+		<ProjectReference Include="..\PersonnelService.Application\PersonnelService.Application.csproj" />
+	</ItemGroup>
 </Project>
