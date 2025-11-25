@@ -3,7 +3,6 @@ using PersonnelService.Application.Services;
 using PersonnelService.Core.Interfaces;
 using PersonnelService.Infrastructure.Data;
 using PersonnelService.Infrastructure.Repositories;
-using static System.Net.Mime.MediaTypeNames;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,8 +24,8 @@ builder.Services.AddScoped<IExaminationRepository, ExaminationRepository>();
 builder.Services.AddScoped<IWorkShiftRepository, WorkShiftRepository>();
 
 // Register Services
-builder.Services.AddScoped<IPersonnelService, Application.Services.PersonnelService>();
-builder.Services.AddScoped<IWorkShiftService, WorkShiftService>();
+builder.Services.AddScoped<IPersonnelService, PersonnelService.Application.Services.PersonnelService>();
+builder.Services.AddScoped<IWorkShiftService, PersonnelService.Application.Services.WorkShiftService>();
 builder.Services.AddScoped<IDocumentService, DocumentService>();
 builder.Services.AddScoped<IExaminationService, ExaminationService>();
 

@@ -51,12 +51,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Database", "Database", "{90
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{2AD7DC1C-35C1-401C-83C5-FA2547711F2D}"
 	ProjectSection(SolutionItems) = preProject
-		BoundedContexts.md = BoundedContexts.md
 		DataDuplicationPolicy.md = DataDuplicationPolicy.md
 		DomainDescription.md = DomainDescription.md
+		MongoDBCollectionSchemas.md = MongoDBCollectionSchemas.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ERD", "ERD", "{56E68B06-CD6F-4C55-BA51-AA4A155363DE}"
+	ProjectSection(SolutionItems) = preProject
+		..\EER-1.png = ..\EER-1.png
+		..\EER-2.png = ..\EER-2.png
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Architecture", "Architecture", "{F92C8333-EF31-4CEF-B690-338DC2845732}"
 	ProjectSection(SolutionItems) = preProject
