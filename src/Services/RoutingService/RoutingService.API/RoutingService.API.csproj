@@ -7,6 +7,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="DotSwashbuckle.AspNetCore.SwaggerGen" Version="3.0.11" />
+    <PackageReference Include="DotSwashbuckle.AspNetCore.SwaggerUI" Version="3.0.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.22">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.22">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\RoutingService.Application\RoutingService.Application.csproj" />
     <ProjectReference Include="..\RoutingService.Infrastructure\RoutingService.Infrastructure.csproj" />
   </ItemGroup>
