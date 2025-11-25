@@ -34,10 +34,12 @@ namespace RoutingService.Infrastructure.Data.Configurations
 
             builder.Property(r => r.CreatedAt)
                 .HasColumnName("CreatedAt")
+                .HasColumnType("datetime")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             builder.Property(r => r.UpdatedAt)
                 .HasColumnName("UpdatedAt")
+                .HasColumnType("datetime")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .ValueGeneratedOnAddOrUpdate();
 
