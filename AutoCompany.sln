@@ -15,11 +15,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PersonnelService", "Personn
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TechnicalService.API", "src\Services\TechnicalService\TechnicalService.API\TechnicalService.API.csproj", "{2B5B0659-28CE-4897-AB48-574C4DF5B201}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TechnicalService.Core", "src\Services\TechnicalService\TechnicalService.Core\TechnicalService.Core.csproj", "{0BBB6CB5-7849-449E-95EB-B2824991C4A1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TechnicalService.Domain", "src\Services\TechnicalService\TechnicalService.Core\TechnicalService.Domain.csproj", "{0BBB6CB5-7849-449E-95EB-B2824991C4A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TechnicalService.Application", "src\Services\TechnicalService\TechnicalService.Application\TechnicalService.Application.csproj", "{B6036567-D173-4748-AAF8-D452D120FAFC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TechnicalService.Bll", "src\Services\TechnicalService\TechnicalService.Application\TechnicalService.Bll.csproj", "{B6036567-D173-4748-AAF8-D452D120FAFC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TechnicalService.Infrastructure", "src\Services\TechnicalService\TechnicalService.Infrastructure\TechnicalService.Infrastructure.csproj", "{C13FA930-9116-4354-9675-8856735DAA2D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TechnicalService.Dal", "src\Services\TechnicalService\TechnicalService.Infrastructure\TechnicalService.Dal.csproj", "{C13FA930-9116-4354-9675-8856735DAA2D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoutingService.API", "src\Services\RoutingService\RoutingService.API\RoutingService.API.csproj", "{D335DFBB-1D72-4E7B-A141-12C8BEEF051D}"
 EndProject
@@ -81,6 +81,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SeedData", "SeedData", "{E3
 		WorkShiftLog.json = WorkShiftLog.json
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppHost", "AppHost\AppHost.csproj", "{29EC42B1-1FB0-4CBE-A508-EB6B7002E798}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -135,6 +137,10 @@ Global
 		{9F295737-5815-4B25-B4A2-869EEC4693BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F295737-5815-4B25-B4A2-869EEC4693BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9F295737-5815-4B25-B4A2-869EEC4693BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29EC42B1-1FB0-4CBE-A508-EB6B7002E798}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29EC42B1-1FB0-4CBE-A508-EB6B7002E798}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29EC42B1-1FB0-4CBE-A508-EB6B7002E798}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29EC42B1-1FB0-4CBE-A508-EB6B7002E798}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

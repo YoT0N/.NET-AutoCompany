@@ -1,6 +1,6 @@
-﻿using TechnicalService.Core.DTOs;
+﻿using TechnicalService.Bll.DTOs.Examination;
 
-namespace TechnicalService.Application.Interfaces;
+namespace TechnicalService.Bll.Interfaces;
 
 public interface IExaminationService
 {

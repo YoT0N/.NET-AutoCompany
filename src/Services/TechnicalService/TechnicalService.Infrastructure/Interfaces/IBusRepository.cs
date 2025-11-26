@@ -1,6 +1,6 @@
-﻿using TechnicalService.Core.Entities;
+﻿using TechnicalService.Domain.Entities;
 
-namespace TechnicalService.Core.Interfaces;
+namespace TechnicalService.Dal.Interfaces;
 
 public interface IBusRepository : IRepository<Bus>
 {

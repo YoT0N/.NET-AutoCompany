@@ -1,4 +1,4 @@
-﻿namespace TechnicalService.Core.Interfaces;
+﻿namespace TechnicalService.Dal.Interfaces;
 
 public interface IRepository<T> where T : class
 {

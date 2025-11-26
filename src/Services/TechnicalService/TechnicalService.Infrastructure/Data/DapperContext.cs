@@ -3,7 +3,7 @@ using MySql.Data.MySqlClient;
 using System.Configuration;
 using System.Data;
 
-namespace TechnicalService.Infrastructure.Data;
+namespace TechnicalService.Dal.Data;
 
 public class DapperContext
 {

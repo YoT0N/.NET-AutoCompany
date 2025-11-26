@@ -12,8 +12,8 @@
   </ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\TechnicalService.Application\TechnicalService.Application.csproj" />
-		<ProjectReference Include="..\TechnicalService.Infrastructure\TechnicalService.Infrastructure.csproj" />
+		<ProjectReference Include="..\TechnicalService.Application\TechnicalService.Bll.csproj" />
+		<ProjectReference Include="..\TechnicalService.Infrastructure\TechnicalService.Dal.csproj" />
 	</ItemGroup>
 
 </Project>

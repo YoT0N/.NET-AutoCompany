@@ -1,6 +1,6 @@
-﻿using TechnicalService.Core.DTOs;
+﻿using TechnicalService.Bll.DTOs.Maintenance;
 
-namespace TechnicalService.Application.Interfaces;
+namespace TechnicalService.Bll.Interfaces;
 
 public interface IMaintenanceService
 {

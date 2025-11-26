@@ -1,9 +1,8 @@
-﻿using TechnicalService.Application.Interfaces;
-using TechnicalService.Core.DTOs;
-using TechnicalService.Core.Entities;
-using TechnicalService.Core.Interfaces;
+﻿using TechnicalService.Dal.Interfaces;
+using TechnicalService.Bll.DTOs.Bus;
+using TechnicalService.Domain.Entities;
 
-namespace TechnicalService.Application.Services;
+namespace TechnicalService.Bll.Services;
 
 public class BusService : IBusService
 {

@@ -1,9 +1,9 @@
 ﻿using MySql.Data.MySqlClient;
 using System.Data;
 using TechnicalService.Core.Interfaces;
-using TechnicalService.Infrastructure.Data;
+using TechnicalService.Dal.Data;
 
-namespace TechnicalService.Infrastructure.Repositories;
+namespace TechnicalService.Dal.Implementations;
 
 public class UnitOfWork : IUnitOfWork
 {

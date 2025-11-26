@@ -1,10 +1,10 @@
 ﻿using Dapper;
 using System.Data;
-using TechnicalService.Core.Entities;
+using TechnicalService.Domain.Entities;
 using TechnicalService.Core.Interfaces;
-using TechnicalService.Infrastructure.Data;
+using TechnicalService.Dal.Data;
 
-namespace TechnicalService.Infrastructure.Repositories;
+namespace TechnicalService.Dal.Implementations.Dapper;
 
 public class MaintenanceRepository : IMaintenanceRepository
 {

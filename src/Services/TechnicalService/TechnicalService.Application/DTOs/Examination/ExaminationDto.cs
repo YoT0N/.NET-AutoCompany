@@ -1,6 +1,6 @@
-﻿namespace TechnicalService.Domain.Entities;
+﻿namespace TechnicalService.Bll.DTOs.Examination;
 
-public class TechnicalExamination
+public class ExaminationDto
 {
     public long ExaminationId { get; set; }
     public string BusCountryNumber { get; set; } = string.Empty;
@@ -10,10 +10,11 @@ public class TechnicalExamination
     public decimal RepairPrice { get; set; }
     public string? MechanicName { get; set; }
     public string? Notes { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public string? CreatedBy { get; set; }
+    public List<RepairPartDto> RepairParts { get; set; } = new();
+}
 
-    // Navigation properties
-    public Bus? Bus { get; set; }
-    public List<ExaminationRepairPart> RepairParts { get; set; } = new();
+public class ExaminationRepairPartDto
+{
+    public int PartId { get; set; }
+    public int Quantity { get; set; }
 }

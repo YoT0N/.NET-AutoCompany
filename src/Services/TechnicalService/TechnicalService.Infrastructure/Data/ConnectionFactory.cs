@@ -2,7 +2,7 @@
 using System.Data;
 using Microsoft.Extensions.Configuration;
 
-namespace TechnicalService.Infrastructure.Data;
+namespace TechnicalService.Dal.Data;
 
 public class SqlConnectionFactory
 {

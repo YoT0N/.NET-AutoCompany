@@ -1,8 +1,8 @@
 using TechnicalService.Application.Interfaces;
 using TechnicalService.Application.Services;
 using TechnicalService.Core.Interfaces;
+using TechnicalService.Dal.Implementations;
 using TechnicalService.Infrastructure.Data;
-using TechnicalService.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 

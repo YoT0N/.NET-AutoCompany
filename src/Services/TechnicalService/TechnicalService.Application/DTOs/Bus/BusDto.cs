@@ -1,6 +1,6 @@
-﻿namespace TechnicalService.Domain.Entities;
+﻿namespace TechnicalService.Bll.DTOs.Bus;
 
-public class Bus
+public class BusDto
 {
     public string CountryNumber { get; set; } = string.Empty;
     public string BoardingNumber { get; set; } = string.Empty;
@@ -11,12 +11,5 @@ public class Bus
     public DateTime DateOfReceipt { get; set; }
     public DateTime? WriteoffDate { get; set; }
     public int CurrentStatusId { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public string? CreatedBy { get; set; }
-    public DateTime UpdatedAt { get; set; }
-    public string? UpdatedBy { get; set; }
-    public bool IsDeleted { get; set; }
-
-    // Navigation property
-    public BusStatus? CurrentStatus { get; set; }
+    public string? CurrentStatusName { get; set; }
 }

@@ -1,4 +1,4 @@
-﻿namespace TechnicalService.Core.DTOs;
+﻿namespace TechnicalService.Bll.DTOs.Maintenance;
 
 public class MaintenanceHistoryDto
 {

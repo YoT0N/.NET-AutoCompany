@@ -1,6 +1,6 @@
-﻿using TechnicalService.Core.DTOs;
+﻿using TechnicalService.Bll.DTOs.Bus;
 
-namespace TechnicalService.Application.Interfaces;
+namespace TechnicalService.Bll.Interfaces;
 
 public interface IBusService
 {

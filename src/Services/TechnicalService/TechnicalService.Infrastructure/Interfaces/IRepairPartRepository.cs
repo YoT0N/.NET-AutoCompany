@@ -1,6 +1,6 @@
 ﻿using TechnicalService.Core.Entities;
 
-namespace TechnicalService.Core.Interfaces;
+namespace TechnicalService.Dal.Interfaces;
 
 public interface IRepairPartRepository : IRepository<RepairPart>
 {

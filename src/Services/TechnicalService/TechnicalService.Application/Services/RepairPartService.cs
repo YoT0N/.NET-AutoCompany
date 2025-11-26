@@ -2,7 +2,7 @@
 using TechnicalService.Core.Entities;
 using TechnicalService.Core.Interfaces;
 
-namespace TechnicalService.Application.Services;
+namespace TechnicalService.Bll.Services;
 
 public class RepairPartService : IRepairPartService
 {

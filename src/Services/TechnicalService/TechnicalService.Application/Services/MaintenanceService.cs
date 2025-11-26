@@ -1,9 +1,9 @@
 ﻿using TechnicalService.Application.Interfaces;
-using TechnicalService.Core.DTOs;
+using TechnicalService.Bll.DTOs.Maintenance;
 using TechnicalService.Core.Entities;
 using TechnicalService.Core.Interfaces;
 
-namespace TechnicalService.Application.Services;
+namespace TechnicalService.Bll.Services;
 
 public class MaintenanceService : IMaintenanceService
 {

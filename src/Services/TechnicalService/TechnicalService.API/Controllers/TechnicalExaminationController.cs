@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TechnicalService.Application.Interfaces;
-using TechnicalService.Core.DTOs;
+using TechnicalService.Bll.DTOs.Examination;
 
 namespace TechnicalService.API.Controllers;
 
