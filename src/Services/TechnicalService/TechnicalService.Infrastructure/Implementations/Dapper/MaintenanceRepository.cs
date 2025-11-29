@@ -1,7 +1,7 @@
 ﻿using Dapper;
 using System.Data;
 using TechnicalService.Domain.Entities;
-using TechnicalService.Core.Interfaces;
+using TechnicalService.Dal.Interfaces;
 using TechnicalService.Dal.Data;
 
 namespace TechnicalService.Dal.Implementations.Dapper;

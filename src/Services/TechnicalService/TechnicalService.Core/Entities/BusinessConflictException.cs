@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace TechnicalService.Domain.Exceptions;
 
-namespace TechnicalService.Domain.Entities
+public class BusinessConflictException : Exception
 {
-    internal class BusinessConflictException
+    public BusinessConflictException(string message) : base(message)
     {
     }
 }

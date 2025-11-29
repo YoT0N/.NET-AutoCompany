@@ -1,12 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using AutoMapper;
+using TechnicalService.Bll.DTOs.Examination;
+using TechnicalService.Domain.Entities;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace TechnicalService.Bll.Mapping
+namespace TechnicalService.Bll.Mapping;
+
+public class ExaminationProfile : Profile
 {
-    internal class ExaminationProfile
+    public ExaminationProfile()
     {
+        CreateMap<CreateExaminationDto, TechnicalExamination>()
+            .ForMember(dest => dest.ExaminationId, opt => opt.Ignore())
+            .ForMember(dest => dest.ExaminationDate, opt => opt.MapFrom(src => DateTime.UtcNow));
+
+        CreateMap<TechnicalExamination, ExaminationDto>();
     }
 }

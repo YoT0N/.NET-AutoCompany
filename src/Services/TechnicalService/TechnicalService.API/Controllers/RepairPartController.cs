@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TechnicalService.Application.Interfaces;
-using TechnicalService.Core.Entities;
+using TechnicalService.Bll.Interfaces;
+using TechnicalService.Domain.Entities;
 
 namespace TechnicalService.API.Controllers;
 

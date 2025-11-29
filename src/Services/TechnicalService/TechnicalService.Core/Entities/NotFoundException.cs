@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace TechnicalService.Domain.Exceptions;
 
-namespace TechnicalService.Domain.Entities
+public class NotFoundException : Exception
 {
-    internal class NotFoundException
+    public NotFoundException(string message) : base(message)
+    {
+    }
+
+    public NotFoundException(string entityName, object key)
+        : base($"{entityName} з ключем '{key}' не знайдено")
     {
     }
 }

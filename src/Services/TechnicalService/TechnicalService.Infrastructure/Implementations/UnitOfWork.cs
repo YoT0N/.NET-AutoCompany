@@ -1,7 +1,10 @@
 ﻿using MySql.Data.MySqlClient;
 using System.Data;
-using TechnicalService.Core.Interfaces;
+using TechnicalService.Dal.Interfaces;
 using TechnicalService.Dal.Data;
+using TechnicalService.Dal.Implementations.Dapper;
+using TechnicalService.Dal.Implementations.AdoNet;
+
 
 namespace TechnicalService.Dal.Implementations;
 
@@ -20,7 +23,7 @@ public class UnitOfWork : IUnitOfWork
     public UnitOfWork(DapperContext context)
     {
         _context = context;
-        Buses = new BusRepository(context);
+        Buses = new BusRepositoryAdoNet(context);
         Examinations = new ExaminationRepository(context);
         Maintenance = new MaintenanceRepository(context);
         RepairParts = new RepairPartRepository(context);

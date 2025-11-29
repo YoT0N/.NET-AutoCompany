@@ -1,44 +1,78 @@
-using TechnicalService.Application.Interfaces;
-using TechnicalService.Application.Services;
-using TechnicalService.Core.Interfaces;
-using TechnicalService.Dal.Implementations;
-using TechnicalService.Infrastructure.Data;
+using Microsoft.OpenApi.Models;
+using TechnicalService.Api.Middleware;
+using TechnicalService.Api.Extensions;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Конфігурація Serilog
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File("logs/technicalservice-.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+
+// Додавання сервісів
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<DapperContext>();
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-builder.Services.AddScoped<IBusService, BusService>();
-builder.Services.AddScoped<IExaminationService, ExaminationService>();
-builder.Services.AddScoped<IMaintenanceService, MaintenanceService>();
-builder.Services.AddScoped<IRepairPartService, RepairPartService>();
-
-builder.Services.AddCors(options =>
+// Swagger/OpenAPI
+builder.Services.AddSwaggerGen(c =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    c.SwaggerDoc("v1", new OpenApiInfo
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        Title = "Technical Service API",
+        Version = "v1",
+        Description = "API для управління технічним обслуговуванням автобусів",
+        Contact = new OpenApiContact
+        {
+            Name = "Technical Service Team"
+        }
     });
+
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        c.IncludeXmlComments(xmlPath);
+    }
 });
+
+// Реєстрація сервісів з Extension методу
+builder.Services.AddApplicationServices(builder.Configuration);
 
 var app = builder.Build();
 
-/*if (app.Environment.IsDevelopment())
+// Middleware
+if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
-}*/
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Technical Service API v1");
+    });
+}
+
+// Глобальна обробка помилок
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
-app.UseCors("AllowAll");
 app.UseAuthorization();
 app.MapControllers();
 
-app.Run();
+try
+{
+    Log.Information("Запуск Technical Service API");
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Застосунок завершився з помилкою");
+}
+finally
+{
+    Log.CloseAndFlush();
+}

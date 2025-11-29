@@ -1,6 +1,7 @@
 ﻿using TechnicalService.Dal.Interfaces;
 using TechnicalService.Bll.DTOs.Bus;
 using TechnicalService.Domain.Entities;
+using TechnicalService.Bll.Interfaces;
 
 namespace TechnicalService.Bll.Services;
 

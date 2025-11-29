@@ -1,12 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using AutoMapper;
+using TechnicalService.Bll.DTOs.Maintenance;
+using TechnicalService.Domain.Entities;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace TechnicalService.Bll.Mapping
+namespace TechnicalService.Bll.Mapping;
+
+public class MaintenanceProfile : Profile
 {
-    internal class MaintenanceProfile
+    public MaintenanceProfile()
     {
+        CreateMap<CreateMaintenanceDto, BusMaintenanceHistory>()
+            .ForMember(dest => dest.MaintenanceId, opt => opt.Ignore())
+            .ForMember(dest => dest.MaintenanceDate, opt => opt.MapFrom(src => DateTime.UtcNow));
+
+        CreateMap<BusMaintenanceHistory, MaintenanceHistoryDto>();
     }
 }

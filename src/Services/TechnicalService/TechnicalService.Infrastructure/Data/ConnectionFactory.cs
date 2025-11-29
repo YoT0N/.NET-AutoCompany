@@ -1,5 +1,4 @@
 ﻿using MySql.Data.MySqlClient;
-using System.Data;
 using Microsoft.Extensions.Configuration;
 
 namespace TechnicalService.Dal.Data;
@@ -10,9 +9,9 @@ public class SqlConnectionFactory
 
     public SqlConnectionFactory(IConfiguration configuration)
     {
-        _connectionString = configuration.GetConnectionString("DefaultConnection");
+        _connectionString = configuration.GetConnectionString("DefaultConnection")!;
     }
 
-    public IDbConnection CreateConnection()
+    public MySqlConnection CreateConnection()
         => new MySqlConnection(_connectionString);
 }

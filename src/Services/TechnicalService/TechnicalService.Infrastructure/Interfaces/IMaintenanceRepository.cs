@@ -1,4 +1,4 @@
-﻿using TechnicalService.Core.Entities;
+﻿using TechnicalService.Domain.Entities;
 
 namespace TechnicalService.Dal.Interfaces;
 

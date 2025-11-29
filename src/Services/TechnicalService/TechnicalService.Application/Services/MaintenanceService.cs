@@ -1,7 +1,7 @@
-﻿using TechnicalService.Application.Interfaces;
+﻿using TechnicalService.Dal.Interfaces;
 using TechnicalService.Bll.DTOs.Maintenance;
-using TechnicalService.Core.Entities;
-using TechnicalService.Core.Interfaces;
+using TechnicalService.Domain.Entities;
+using TechnicalService.Bll.Interfaces;
 
 namespace TechnicalService.Bll.Services;
 
