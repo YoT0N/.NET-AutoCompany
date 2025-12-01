@@ -1,9 +1,5 @@
-﻿using RoutingService.Core.DTOs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FluentValidation;
+using RoutingService.Core.DTOs;
 
 namespace RoutingService.Bll.Validators.RouteValidators
 {

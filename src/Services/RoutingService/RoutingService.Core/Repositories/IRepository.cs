@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace RoutingService.Domain.Interfaces.Repositories
+namespace RoutingService.Domain.Repositories
 {
     /// <summary>
     /// Async Generic Repository pattern interface

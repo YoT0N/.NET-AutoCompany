@@ -1,9 +1,6 @@
-﻿using RoutingService.Core.DTOs;
+﻿using FluentValidation;
+using RoutingService.Core.DTOs;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RoutingService.Bll.Validators.TripValidators
 {
@@ -25,9 +22,6 @@ namespace RoutingService.Bll.Validators.TripValidators
         }
     }
 
-    /// <summary>
-    /// Validator for UpdateTripDto
-    /// </summary>
     public class UpdateTripDtoValidator : AbstractValidator<UpdateTripDto>
     {
         public UpdateTripDtoValidator()

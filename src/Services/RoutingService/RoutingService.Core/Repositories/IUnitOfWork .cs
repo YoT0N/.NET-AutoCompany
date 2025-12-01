@@ -1,18 +1,17 @@
-﻿using Microsoft.EntityFrameworkCore.Storage;
-using RoutingService.Core.Entities;
-using RoutingService.Domain.Entities;
+﻿using RoutingService.Domain.Entities;
 using System;
 using System.Threading.Tasks;
 
-namespace RoutingService.Domain.Interfaces.Repositories
+namespace RoutingService.Domain.Repositories
 {
     /// <summary>
     /// Unit of Work interface
     /// Provides access to all repositories and transaction management
+    /// Coordinates multiple repository operations in a single transaction
     /// </summary>
     public interface IUnitOfWork : IDisposable
     {
-        // Generic repositories
+        // Generic repositories for basic CRUD operations
         IRepository<Route> Routes { get; }
         IRepository<RouteStop> RouteStops { get; }
         IRepository<RouteStopAssignment> RouteStopAssignments { get; }
@@ -21,14 +20,14 @@ namespace RoutingService.Domain.Interfaces.Repositories
         IRepository<Schedule> Schedules { get; }
         IRepository<Trip> Trips { get; }
 
-        // Specific repositories with custom methods
+        // Specific repositories with custom queries
         IRouteRepository RouteRepository { get; }
         IRouteSheetRepository RouteSheetRepository { get; }
         IScheduleRepository ScheduleRepository { get; }
 
-        // Transaction management
+        // Transaction management methods
         Task<int> SaveChangesAsync();
-        Task<IDbContextTransaction> BeginTransactionAsync();
+        Task BeginTransactionAsync();
         Task CommitTransactionAsync();
         Task RollbackTransactionAsync();
     }
