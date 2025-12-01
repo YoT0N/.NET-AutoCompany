@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RoutingService.Core.Entities
+namespace RoutingService.Domain.Entities
 {
     public class Trip
     {

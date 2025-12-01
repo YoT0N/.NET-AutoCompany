@@ -8,7 +8,7 @@ using RoutingService.Infrastructure.Data;
 
 #nullable disable
 
-namespace RoutingService.Infrastructure.Migrations
+namespace RoutingService.Dal.Migrations
 {
     [DbContext(typeof(RoutingDbContext))]
     partial class RoutingDbContextModelSnapshot : ModelSnapshot

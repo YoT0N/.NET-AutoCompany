@@ -23,11 +23,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TechnicalService.Dal", "src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoutingService.API", "src\Services\RoutingService\RoutingService.API\RoutingService.API.csproj", "{D335DFBB-1D72-4E7B-A141-12C8BEEF051D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoutingService.Core", "src\Services\RoutingService\RoutingService.Core\RoutingService.Core.csproj", "{9D606C6C-5DAD-4BCE-965B-3AAE92C07B96}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoutingService.Domain", "src\Services\RoutingService\RoutingService.Core\RoutingService.Domain.csproj", "{9D606C6C-5DAD-4BCE-965B-3AAE92C07B96}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoutingService.Infrastructure", "src\Services\RoutingService\RoutingService.Infrastructure\RoutingService.Infrastructure.csproj", "{11268DA6-A5FE-4192-B798-FCFCB38067A2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoutingService.Dal", "src\Services\RoutingService\RoutingService.Infrastructure\RoutingService.Dal.csproj", "{11268DA6-A5FE-4192-B798-FCFCB38067A2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoutingService.Application", "src\Services\RoutingService\RoutingService.Application\RoutingService.Application.csproj", "{E2860DD0-FE45-46D8-BE8B-FCA3DFAB11CE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoutingService.Bll", "src\Services\RoutingService\RoutingService.Application\RoutingService.Bll.csproj", "{E2860DD0-FE45-46D8-BE8B-FCA3DFAB11CE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonnelService.API", "src\Services\PersonnelService\PersonnelService.API\PersonnelService.API.csproj", "{34A79B97-A943-47DF-9D50-0F5ECDF90C4E}"
 EndProject

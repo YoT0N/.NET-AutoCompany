@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 using RoutingService.Core.Entities;
-using RoutingService.Core.Interfaces;
+using RoutingService.Domain.Interfaces.Repositories;
 using RoutingService.Infrastructure.Data;
 
-namespace RoutingService.Infrastructure.Repositories
+namespace RoutingService.Dal.Repositories
 {
     public class UnitOfWork : IUnitOfWork
     {

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace RoutingService.Core.Entities
+namespace RoutingService.Domain.Entities
 {
     public class RouteStop
     {

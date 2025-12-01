@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using RoutingService.Core.Entities;
 
-namespace RoutingService.Core.Interfaces
+namespace RoutingService.Domain.Interfaces.Repositories
 {
     public interface IUnitOfWork : IDisposable
     {

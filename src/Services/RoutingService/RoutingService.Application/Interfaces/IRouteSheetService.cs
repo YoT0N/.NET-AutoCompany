@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using RoutingService.Core.DTOs;
 
-namespace RoutingService.Application.Interfaces
+namespace RoutingService.Bll.Interfaces
 {
     public interface IRouteSheetService
     {

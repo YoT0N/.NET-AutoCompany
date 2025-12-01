@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RoutingService.Core\RoutingService.Core.csproj" />
-    <ProjectReference Include="..\RoutingService.Infrastructure\RoutingService.Infrastructure.csproj" />
+    <ProjectReference Include="..\RoutingService.Core\RoutingService.Domain.csproj" />
+    <ProjectReference Include="..\RoutingService.Infrastructure\RoutingService.Dal.csproj" />
   </ItemGroup>
 
 </Project>

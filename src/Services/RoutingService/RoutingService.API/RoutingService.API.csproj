@@ -21,8 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RoutingService.Application\RoutingService.Application.csproj" />
-    <ProjectReference Include="..\RoutingService.Infrastructure\RoutingService.Infrastructure.csproj" />
+    <ProjectReference Include="..\RoutingService.Application\RoutingService.Bll.csproj" />
+    <ProjectReference Include="..\RoutingService.Infrastructure\RoutingService.Dal.csproj" />
   </ItemGroup>
 
 </Project>

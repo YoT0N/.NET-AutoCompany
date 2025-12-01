@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using RoutingService.Application.Interfaces;
 using RoutingService.Application.Services;
-using RoutingService.Core.Interfaces;
+using RoutingService.Domain.Interfaces.Repositories;
 using RoutingService.Infrastructure.Data;
 using RoutingService.Infrastructure.Repositories;
 

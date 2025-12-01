@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RoutingService.Core.Entities;
 
-namespace RoutingService.Infrastructure.Data.Configurations
+namespace RoutingService.Dal.Data.Configurations
 {
     public class RouteConfiguration : IEntityTypeConfiguration<Route>
     {

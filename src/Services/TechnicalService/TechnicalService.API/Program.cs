@@ -1,9 +1,10 @@
-using TechnicalService.Api.Extensions;
-using TechnicalService.Api.Middleware;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using TechnicalService.Api.Extensions;
+using TechnicalService.Api.Middleware;
+using TechnicalService.Bll.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 

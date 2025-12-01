@@ -24,7 +24,7 @@
   </ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\RoutingService.Core\RoutingService.Core.csproj" />
+		<ProjectReference Include="..\RoutingService.Core\RoutingService.Domain.csproj" />
 	</ItemGroup>
 	
 </Project>

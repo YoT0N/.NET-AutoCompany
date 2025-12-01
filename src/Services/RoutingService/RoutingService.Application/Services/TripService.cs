@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using RoutingService.Application.Interfaces;
 using RoutingService.Core.DTOs;
 using RoutingService.Core.Entities;
-using RoutingService.Core.Interfaces;
+using RoutingService.Domain.Interfaces.Repositories;
 
-namespace RoutingService.Application.Services
+namespace RoutingService.Bll.Services
 {
     public class TripService : ITripService
     {
