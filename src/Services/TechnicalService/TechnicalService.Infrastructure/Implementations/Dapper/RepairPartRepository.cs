@@ -5,6 +5,10 @@ using TechnicalService.Dal.Data;
 
 namespace TechnicalService.Dal.Implementations.Dapper;
 
+/// <summary>
+/// Репозиторій запчастин для ремонту (ADO.NET + Dapper)
+/// Демонструє роботу з Dapper для простих CRUD операцій та бізнес-запитів
+/// </summary>
 public class RepairPartRepository : IRepairPartRepository
 {
     private readonly DapperContext _context;
@@ -14,36 +18,70 @@ public class RepairPartRepository : IRepairPartRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<RepairPart>> GetAllAsync()
-    {
-        using var connection = _context.CreateConnection();
-
-        var sql = "SELECT * FROM RepairPart WHERE IsDeleted = FALSE ORDER BY PartName";
-
-        return await connection.QueryAsync<RepairPart>(sql);
-    }
-
-    public async Task<RepairPart?> GetByIdAsync(object id)
-    {
-        using var connection = _context.CreateConnection();
-
-        var sql = "SELECT * FROM RepairPart WHERE PartId = @PartId AND IsDeleted = FALSE";
-
-        return await connection.QueryFirstOrDefaultAsync<RepairPart>(sql, new { PartId = id });
-    }
-
-    public async Task<int> AddAsync(RepairPart entity)
+    public async Task<IEnumerable<RepairPart>> GetAllAsync(
+        CancellationToken cancellationToken = default)
     {
         using var connection = _context.CreateConnection();
 
         var sql = @"
-            INSERT INTO RepairPart (PartName, PartNumber, UnitPrice, StockQuantity, Supplier)
-            VALUES (@PartName, @PartNumber, @UnitPrice, @StockQuantity, @Supplier)";
+            SELECT PartId, PartName, PartNumber, UnitPrice, StockQuantity, 
+                   Supplier, CreatedAt, UpdatedAt, IsDeleted
+            FROM RepairPart 
+            WHERE IsDeleted = @IsDeleted 
+            ORDER BY PartName";
 
-        return await connection.ExecuteAsync(sql, entity);
+        var command = new CommandDefinition(
+            sql,
+            new { IsDeleted = false },
+            cancellationToken: cancellationToken);
+
+        return await connection.QueryAsync<RepairPart>(command);
     }
 
-    public async Task<int> UpdateAsync(RepairPart entity)
+    public async Task<RepairPart?> GetByIdAsync(
+        object id,
+        CancellationToken cancellationToken = default)
+    {
+        using var connection = _context.CreateConnection();
+
+        var sql = @"
+            SELECT PartId, PartName, PartNumber, UnitPrice, StockQuantity, 
+                   Supplier, CreatedAt, UpdatedAt, IsDeleted
+            FROM RepairPart 
+            WHERE PartId = @PartId AND IsDeleted = @IsDeleted";
+
+        var command = new CommandDefinition(
+            sql,
+            new { PartId = id, IsDeleted = false },
+            cancellationToken: cancellationToken);
+
+        return await connection.QueryFirstOrDefaultAsync<RepairPart>(command);
+    }
+
+    public async Task<int> AddAsync(
+        RepairPart entity,
+        CancellationToken cancellationToken = default)
+    {
+        using var connection = _context.CreateConnection();
+
+        var sql = @"
+            INSERT INTO RepairPart 
+            (PartName, PartNumber, UnitPrice, StockQuantity, Supplier)
+            VALUES 
+            (@PartName, @PartNumber, @UnitPrice, @StockQuantity, @Supplier);
+            SELECT LAST_INSERT_ID();";
+
+        var command = new CommandDefinition(
+            sql,
+            entity,
+            cancellationToken: cancellationToken);
+
+        return await connection.ExecuteScalarAsync<int>(command);
+    }
+
+    public async Task<int> UpdateAsync(
+        RepairPart entity,
+        CancellationToken cancellationToken = default)
     {
         using var connection = _context.CreateConnection();
 
@@ -53,53 +91,137 @@ public class RepairPartRepository : IRepairPartRepository
                 PartNumber = @PartNumber,
                 UnitPrice = @UnitPrice,
                 StockQuantity = @StockQuantity,
-                Supplier = @Supplier
-            WHERE PartId = @PartId AND IsDeleted = FALSE";
+                Supplier = @Supplier,
+                UpdatedAt = CURRENT_TIMESTAMP
+            WHERE PartId = @PartId AND IsDeleted = @IsDeleted";
 
-        return await connection.ExecuteAsync(sql, entity);
+        var command = new CommandDefinition(
+            sql,
+            new
+            {
+                entity.PartId,
+                entity.PartName,
+                entity.PartNumber,
+                entity.UnitPrice,
+                entity.StockQuantity,
+                entity.Supplier,
+                IsDeleted = false
+            },
+            cancellationToken: cancellationToken);
+
+        return await connection.ExecuteAsync(command);
     }
 
-    public async Task<int> DeleteAsync(object id)
-    {
-        using var connection = _context.CreateConnection();
-
-        var sql = "UPDATE RepairPart SET IsDeleted = TRUE WHERE PartId = @PartId";
-
-        return await connection.ExecuteAsync(sql, new { PartId = id });
-    }
-
-    public async Task<IEnumerable<RepairPart>> GetLowStockPartsAsync(int threshold)
-    {
-        using var connection = _context.CreateConnection();
-
-        var sql = @"
-            SELECT * FROM RepairPart 
-            WHERE StockQuantity <= @Threshold AND IsDeleted = FALSE
-            ORDER BY StockQuantity";
-
-        return await connection.QueryAsync<RepairPart>(sql, new { Threshold = threshold });
-    }
-
-    public async Task<int> UpdateStockQuantityAsync(int partId, int quantity)
+    public async Task<int> DeleteAsync(
+        object id,
+        CancellationToken cancellationToken = default)
     {
         using var connection = _context.CreateConnection();
 
         var sql = @"
             UPDATE RepairPart 
-            SET StockQuantity = StockQuantity + @Quantity
-            WHERE PartId = @PartId AND IsDeleted = FALSE";
+            SET IsDeleted = @IsDeleted,
+                UpdatedAt = CURRENT_TIMESTAMP
+            WHERE PartId = @PartId";
 
-        return await connection.ExecuteAsync(sql, new { PartId = partId, Quantity = quantity });
+        var command = new CommandDefinition(
+            sql,
+            new { PartId = id, IsDeleted = true },
+            cancellationToken: cancellationToken);
+
+        return await connection.ExecuteAsync(command);
     }
 
-    public async Task<RepairPart?> GetByPartNumberAsync(string partNumber)
+    // ========== IRepairPartRepository специфічні методи ==========
+
+    /// <summary>
+    /// Отримати запчастини з низьким запасом на складі
+    /// </summary>
+    public async Task<IEnumerable<RepairPart>> GetLowStockPartsAsync(
+        int threshold,
+        CancellationToken cancellationToken = default)
     {
         using var connection = _context.CreateConnection();
 
         var sql = @"
-            SELECT * FROM RepairPart 
-            WHERE PartNumber = @PartNumber AND IsDeleted = FALSE";
+            SELECT PartId, PartName, PartNumber, UnitPrice, StockQuantity, 
+                   Supplier, CreatedAt, UpdatedAt, IsDeleted
+            FROM RepairPart 
+            WHERE StockQuantity <= @Threshold 
+              AND IsDeleted = @IsDeleted
+            ORDER BY StockQuantity ASC, PartName";
 
-        return await connection.QueryFirstOrDefaultAsync<RepairPart>(sql, new { PartNumber = partNumber });
+        var command = new CommandDefinition(
+            sql,
+            new { Threshold = threshold, IsDeleted = false },
+            cancellationToken: cancellationToken);
+
+        return await connection.QueryAsync<RepairPart>(command);
+    }
+
+    /// <summary>
+    /// Оновити кількість запчастин на складі (збільшити/зменшити)
+    /// Використовується при постачанні або використанні запчастин
+    /// </summary>
+    public async Task<int> UpdateStockQuantityAsync(
+        int partId,
+        int quantity,
+        CancellationToken cancellationToken = default)
+    {
+        using var connection = _context.CreateConnection();
+
+        var sql = @"
+            UPDATE RepairPart 
+            SET StockQuantity = StockQuantity + @Quantity,
+                UpdatedAt = CURRENT_TIMESTAMP
+            WHERE PartId = @PartId 
+              AND IsDeleted = @IsDeleted
+              AND (StockQuantity + @Quantity) >= 0";  // ← Запобігаємо від'ємній кількості
+
+        var command = new CommandDefinition(
+            sql,
+            new { PartId = partId, Quantity = quantity, IsDeleted = false },
+            cancellationToken: cancellationToken);
+
+        var affectedRows = await connection.ExecuteAsync(command);
+
+        // Якщо 0 рядків оновлено - можливо спроба зробити від'ємну кількість
+        if (affectedRows == 0 && quantity < 0)
+        {
+            // Перевіримо, чи існує запчастина
+            var part = await GetByIdAsync(partId, cancellationToken);
+            if (part != null && part.StockQuantity + quantity < 0)
+            {
+                throw new InvalidOperationException(
+                    $"Insufficient stock for part {partId}. " +
+                    $"Available: {part.StockQuantity}, Requested: {Math.Abs(quantity)}");
+            }
+        }
+
+        return affectedRows;
+    }
+
+    /// <summary>
+    /// Знайти запчастину за артикулом
+    /// </summary>
+    public async Task<RepairPart?> GetByPartNumberAsync(
+        string partNumber,
+        CancellationToken cancellationToken = default)
+    {
+        using var connection = _context.CreateConnection();
+
+        var sql = @"
+            SELECT PartId, PartName, PartNumber, UnitPrice, StockQuantity, 
+                   Supplier, CreatedAt, UpdatedAt, IsDeleted
+            FROM RepairPart 
+            WHERE PartNumber = @PartNumber 
+              AND IsDeleted = @IsDeleted";
+
+        var command = new CommandDefinition(
+            sql,
+            new { PartNumber = partNumber, IsDeleted = false },
+            cancellationToken: cancellationToken);
+
+        return await connection.QueryFirstOrDefaultAsync<RepairPart>(command);
     }
 }

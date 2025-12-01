@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TechnicalService.Bll.Interfaces;
 using TechnicalService.Bll.DTOs.Bus;
-using TechnicalService.Domain.Exceptions;
 
 namespace TechnicalService.Api.Controllers;
 
@@ -26,7 +25,7 @@ public class BusController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<BusDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<BusDto>>> GetAllBuses(CancellationToken cancellationToken)
     {
-        var buses = await _busService.GetAllBusesAsync();
+        var buses = await _busService.GetAllBusesAsync(cancellationToken);
         return Ok(buses);
     }
 
@@ -40,13 +39,7 @@ public class BusController : ControllerBase
         string countryNumber,
         CancellationToken cancellationToken)
     {
-        var bus = await _busService.GetBusByCountryNumberAsync(countryNumber);
-
-        if (bus == null)
-        {
-            throw new NotFoundException("Bus", countryNumber);
-        }
-
+        var bus = await _busService.GetBusByCountryNumberAsync(countryNumber, cancellationToken);
         return Ok(bus);
     }
 
@@ -56,20 +49,16 @@ public class BusController : ControllerBase
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult> CreateBus(
         [FromBody] CreateBusDto createBusDto,
         CancellationToken cancellationToken)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
-        var result = await _busService.CreateBusAsync(createBusDto);
+        var countryNumber = await _busService.CreateBusAsync(createBusDto, cancellationToken);
 
         return CreatedAtAction(
             nameof(GetBusByCountryNumber),
-            new { countryNumber = createBusDto.CountryNumber },
+            new { countryNumber },
             null);
     }
 
@@ -85,18 +74,7 @@ public class BusController : ControllerBase
         [FromBody] UpdateBusDto updateBusDto,
         CancellationToken cancellationToken)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
-        var result = await _busService.UpdateBusAsync(countryNumber, updateBusDto);
-
-        if (result == 0)
-        {
-            throw new NotFoundException("Bus", countryNumber);
-        }
-
+        await _busService.UpdateBusAsync(countryNumber, updateBusDto, cancellationToken);
         return NoContent();
     }
 
@@ -106,15 +84,12 @@ public class BusController : ControllerBase
     [HttpDelete("{countryNumber}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> DeleteBus(string countryNumber, CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+    public async Task<ActionResult> DeleteBus(
+        string countryNumber,
+        CancellationToken cancellationToken)
     {
-        var result = await _busService.DeleteBusAsync(countryNumber);
-
-        if (result == 0)
-        {
-            throw new NotFoundException("Bus", countryNumber);
-        }
-
+        await _busService.DeleteBusAsync(countryNumber, cancellationToken);
         return NoContent();
     }
 
@@ -125,7 +100,7 @@ public class BusController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<BusDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<BusDto>>> GetActiveBuses(CancellationToken cancellationToken)
     {
-        var buses = await _busService.GetActiveBusesAsync();
+        var buses = await _busService.GetActiveBusesAsync(cancellationToken);
         return Ok(buses);
     }
 
@@ -135,18 +110,27 @@ public class BusController : ControllerBase
     [HttpPatch("{countryNumber}/status")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult> UpdateBusStatus(
         string countryNumber,
         [FromBody] int newStatusId,
         CancellationToken cancellationToken)
     {
-        var result = await _busService.UpdateBusStatusAsync(countryNumber, newStatusId);
-
-        if (result == 0)
-        {
-            throw new NotFoundException("Bus", countryNumber);
-        }
-
+        await _busService.UpdateBusStatusAsync(countryNumber, newStatusId, cancellationToken);
         return NoContent();
+    }
+
+    /// <summary>
+    /// Отримати загальний пробіг автобуса
+    /// </summary>
+    [HttpGet("{countryNumber}/mileage")]
+    [ProducesResponseType(typeof(decimal), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<decimal>> GetTotalMileage(
+        string countryNumber,
+        CancellationToken cancellationToken)
+    {
+        var mileage = await _busService.GetTotalMileageAsync(countryNumber, cancellationToken);
+        return Ok(mileage);
     }
 }

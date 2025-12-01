@@ -1,16 +1,18 @@
-using Microsoft.OpenApi.Models;
-using TechnicalService.Api.Middleware;
 using TechnicalService.Api.Extensions;
+using TechnicalService.Api.Middleware;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using Microsoft.OpenApi.Models;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Конфігурація Serilog
+// Serilog
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
     .WriteTo.Console()
-    .WriteTo.File("logs/technicalservice-.txt", rollingInterval: RollingInterval.Day)
+    .WriteTo.File("logs/technical-service-.txt", rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
 builder.Host.UseSerilog();
@@ -26,11 +28,7 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "Technical Service API",
         Version = "v1",
-        Description = "API для управління технічним обслуговуванням автобусів",
-        Contact = new OpenApiContact
-        {
-            Name = "Technical Service Team"
-        }
+        Description = "API для управління технічним обслуговуванням автобусів"
     });
 
     var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -41,12 +39,27 @@ builder.Services.AddSwaggerGen(c =>
     }
 });
 
-// Реєстрація сервісів з Extension методу
+// FluentValidation
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<TechnicalService.Bll.Validators.CreateBusDtoValidator>();
+
+// Додавання Application Services (репозиторії, сервіси, UoW, AutoMapper)
 builder.Services.AddApplicationServices(builder.Configuration);
+
+// CORS (за потреби)
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 
 var app = builder.Build();
 
-// Middleware
+// Middleware pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -56,10 +69,10 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-// Глобальна обробка помилок
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
+app.UseCors();
 app.UseAuthorization();
 app.MapControllers();
 
@@ -70,7 +83,7 @@ try
 }
 catch (Exception ex)
 {
-    Log.Fatal(ex, "Застосунок завершився з помилкою");
+    Log.Fatal(ex, "Помилка запуску додатку");
 }
 finally
 {

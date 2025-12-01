@@ -70,7 +70,7 @@ public class TechnicalExaminationController : ControllerBase
     }
 
     [HttpPut("{examinationId}")]
-    public async Task<ActionResult> UpdateExamination(long examinationId, [FromBody] CreateExaminationDto updateExaminationDto)
+    public async Task<ActionResult> UpdateExamination(long examinationId, [FromBody] UpdateExaminationDto updateExaminationDto)
     {
         var result = await _examinationService.UpdateExaminationAsync(examinationId, updateExaminationDto);
 

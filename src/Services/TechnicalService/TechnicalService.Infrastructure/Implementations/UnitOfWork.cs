@@ -1,10 +1,9 @@
-﻿using MySql.Data.MySqlClient;
+﻿using MySqlConnector;
 using System.Data;
 using TechnicalService.Dal.Interfaces;
 using TechnicalService.Dal.Data;
 using TechnicalService.Dal.Implementations.Dapper;
 using TechnicalService.Dal.Implementations.AdoNet;
-
 
 namespace TechnicalService.Dal.Implementations;
 
@@ -15,69 +14,142 @@ public class UnitOfWork : IUnitOfWork
     private IDbTransaction? _transaction;
     private bool _disposed;
 
-    public IBusRepository Buses { get; }
-    public IExaminationRepository Examinations { get; }
-    public IMaintenanceRepository Maintenance { get; }
-    public IRepairPartRepository RepairParts { get; }
+    // Lazy initialization репозиторіїв
+    private IBusRepository? _buses;
+    private IExaminationRepository? _examinations;
+    private IMaintenanceRepository? _maintenances;
+    private IRepairPartRepository? _repairParts;
 
     public UnitOfWork(DapperContext context)
     {
         _context = context;
-        Buses = new BusRepositoryAdoNet(context);
-        Examinations = new ExaminationRepository(context);
-        Maintenance = new MaintenanceRepository(context);
-        RepairParts = new RepairPartRepository(context);
     }
 
-    public async Task<int> SaveChangesAsync()
-    {
-        // Dapper не потребує явного SaveChanges, оскільки кожна операція автоматично зберігається
-        return await Task.FromResult(0);
-    }
+    // Properties з lazy initialization
+    public IBusRepository Buses =>
+        _buses ??= new BusRepositoryAdoNet(_context);
 
-    public async Task BeginTransactionAsync()
+    public IExaminationRepository Examinations =>
+        _examinations ??= new ExaminationRepository(_context);
+
+    public IMaintenanceRepository Maintenances =>
+        _maintenances ??= new MaintenanceRepository(_context);
+
+    public IRepairPartRepository RepairParts =>
+        _repairParts ??= new RepairPartRepository(_context);
+
+    // Властивості для доступу до з'єднання та транзакції
+    public IDbConnection? Connection => _connection;
+    public IDbTransaction? Transaction => _transaction;
+
+    /// <summary>
+    /// Розпочати транзакцію
+    /// </summary>
+    public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
+        if (_transaction != null)
+        {
+            throw new InvalidOperationException("Transaction already started");
+        }
+
         _connection = _context.CreateConnection();
-        _connection.Open();
+
+        if (_connection is MySqlConnection mySqlConnection)
+        {
+            await mySqlConnection.OpenAsync(cancellationToken);
+        }
+        else
+        {
+            _connection.Open();
+        }
+
         _transaction = _connection.BeginTransaction();
-        await Task.CompletedTask;
     }
 
-    public async Task CommitAsync()
+    /// <summary>
+    /// Зафіксувати транзакцію
+    /// </summary>
+    public async Task CommitAsync(CancellationToken cancellationToken = default)
     {
+        if (_transaction == null)
+        {
+            throw new InvalidOperationException("Transaction not started");
+        }
+
         try
         {
-            _transaction?.Commit();
+            // Перевірка, чи транзакція все ще активна
+            if (_transaction.Connection != null)
+            {
+                _transaction.Commit();
+            }
         }
         catch
         {
-            _transaction?.Rollback();
+            await RollbackAsync(cancellationToken);
             throw;
         }
         finally
         {
-            _transaction?.Dispose();
-            _transaction = null;
-            _connection?.Close();
-            _connection?.Dispose();
-            _connection = null;
+            await DisposeTransactionAsync();
+        }
+    }
+
+    /// <summary>
+    /// Відкатити транзакцію
+    /// </summary>
+    public async Task RollbackAsync(CancellationToken cancellationToken = default)
+    {
+        if (_transaction == null)
+        {
+            return; // Нічого відкочувати
         }
 
-        await Task.CompletedTask;
+        try
+        {
+            // Перевірка, чи транзакція все ще активна
+            if (_transaction.Connection != null)
+            {
+                _transaction.Rollback();
+            }
+        }
+        finally
+        {
+            await DisposeTransactionAsync();
+        }
     }
 
-    public async Task RollbackAsync()
+    /// <summary>
+    /// Очистити ресурси транзакції та з'єднання
+    /// </summary>
+    private async Task DisposeTransactionAsync()
     {
-        _transaction?.Rollback();
-        _transaction?.Dispose();
-        _transaction = null;
-        _connection?.Close();
-        _connection?.Dispose();
-        _connection = null;
+        if (_transaction != null)
+        {
+            _transaction.Dispose();
+            _transaction = null;
+        }
 
-        await Task.CompletedTask;
+        if (_connection != null)
+        {
+            if (_connection is MySqlConnection mySqlConnection)
+            {
+                await mySqlConnection.CloseAsync();
+                await mySqlConnection.DisposeAsync();
+            }
+            else
+            {
+                _connection.Close();
+                _connection.Dispose();
+            }
+
+            _connection = null;
+        }
     }
 
+    /// <summary>
+    /// Dispose pattern
+    /// </summary>
     public void Dispose()
     {
         Dispose(true);
@@ -86,11 +158,27 @@ public class UnitOfWork : IUnitOfWork
 
     protected virtual void Dispose(bool disposing)
     {
-        if (!_disposed && disposing)
+        if (_disposed) return;
+
+        if (disposing)
         {
+            // Якщо транзакція все ще активна - відкотити
+            if (_transaction?.Connection != null)
+            {
+                try
+                {
+                    _transaction.Rollback();
+                }
+                catch
+                {
+                    // Ігноруємо помилки при Dispose
+                }
+            }
+
             _transaction?.Dispose();
             _connection?.Dispose();
         }
+
         _disposed = true;
     }
 }

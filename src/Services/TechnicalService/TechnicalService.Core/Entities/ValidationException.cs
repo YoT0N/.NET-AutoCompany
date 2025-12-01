@@ -1,20 +1,42 @@
 ﻿namespace TechnicalService.Domain.Exceptions;
 
+/// <summary>
+/// Виняток валідації з підтримкою як простих повідомлень, так і структурованих помилок
+/// </summary>
 public class ValidationException : Exception
 {
-    public Dictionary<string, string[]> Errors { get; }
+    public IDictionary<string, string[]> Errors { get; }
 
-    public ValidationException(Dictionary<string, string[]> errors)
-        : base("Одна або більше помилок валідації")
+    /// <summary>
+    /// Конструктор для словника помилок (для FluentValidation)
+    /// </summary>
+    public ValidationException(IDictionary<string, string[]> errors)
+        : base("Виникли одна або більше помилок валідації")
     {
         Errors = errors;
     }
 
+    /// <summary>
+    /// Конструктор для однієї помилки з вказівкою поля
+    /// </summary>
     public ValidationException(string propertyName, string errorMessage)
-        : this(new Dictionary<string, string[]>
+        : base(errorMessage)
+    {
+        Errors = new Dictionary<string, string[]>
         {
             { propertyName, new[] { errorMessage } }
-        })
+        };
+    }
+
+    /// <summary>
+    /// Конструктор для простого повідомлення без прив'язки до поля
+    /// </summary>
+    public ValidationException(string message)
+        : base(message)
     {
+        Errors = new Dictionary<string, string[]>
+        {
+            { "General", new[] { message } }
+        };
     }
 }

@@ -6,9 +6,6 @@ using TechnicalService.Dal.Data;
 
 namespace TechnicalService.Dal.Implementations.AdoNet;
 
-/// <summary>
-/// Реалізація репозиторію автобусів на чистому ADO.NET (MySqlConnector)
-/// </summary>
 public class BusRepositoryAdoNet : IBusRepository
 {
     private readonly DapperContext _context;
@@ -18,14 +15,16 @@ public class BusRepositoryAdoNet : IBusRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Bus>> GetAllAsync()
+    public async Task<IEnumerable<Bus>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var buses = new List<Bus>();
 
-        await using var connection = _context.CreateConnection();
-        await connection.OpenAsync();
+        await using var connection = _context.CreateConnection() as MySqlConnection;
+        if (connection == null) throw new InvalidOperationException("Connection is not MySqlConnection");
 
-        var commandText = @"
+        await connection.OpenAsync(cancellationToken);
+
+        const string commandText = @"
             SELECT b.CountryNumber, b.BoardingNumber, b.Brand, b.PassengerCapacity,
                    b.YearOfManufacture, b.Mileage, b.DateOfReceipt, b.WriteoffDate,
                    b.CurrentStatusId, b.IsDeleted, b.CreatedAt, b.UpdatedAt,
@@ -38,9 +37,9 @@ public class BusRepositoryAdoNet : IBusRepository
         await using var command = new MySqlCommand(commandText, connection);
         command.Parameters.AddWithValue("@IsDeleted", false);
 
-        await using var reader = await command.ExecuteReaderAsync();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
 
-        while (await reader.ReadAsync())
+        while (await reader.ReadAsync(cancellationToken))
         {
             buses.Add(MapBusFromReader(reader));
         }
@@ -48,33 +47,39 @@ public class BusRepositoryAdoNet : IBusRepository
         return buses;
     }
 
-    public async Task<Bus?> GetByIdAsync(object id)
+    public async Task<Bus?> GetByIdAsync(object id, CancellationToken cancellationToken = default)
     {
-        await using var connection = _context.CreateConnection();
-        await connection.OpenAsync();
+        await using var connection = _context.CreateConnection() as MySqlConnection;
+        if (connection == null) throw new InvalidOperationException("Connection is not MySqlConnection");
 
-        var commandText = @"
-            SELECT CountryNumber, BoardingNumber, Brand, PassengerCapacity,
-                   YearOfManufacture, Mileage, DateOfReceipt, WriteoffDate,
-                   CurrentStatusId, IsDeleted, CreatedAt, UpdatedAt
-            FROM Bus 
-            WHERE CountryNumber = @CountryNumber AND IsDeleted = @IsDeleted";
+        await connection.OpenAsync(cancellationToken);
+
+        const string commandText = @"
+            SELECT b.CountryNumber, b.BoardingNumber, b.Brand, b.PassengerCapacity,
+                   b.YearOfManufacture, b.Mileage, b.DateOfReceipt, b.WriteoffDate,
+                   b.CurrentStatusId, b.IsDeleted, b.CreatedAt, b.UpdatedAt,
+                   bs.StatusId, bs.StatusName, bs.StatusDescription
+            FROM Bus b
+            INNER JOIN BusStatus bs ON b.CurrentStatusId = bs.StatusId
+            WHERE b.CountryNumber = @CountryNumber AND b.IsDeleted = @IsDeleted";
 
         await using var command = new MySqlCommand(commandText, connection);
         command.Parameters.AddWithValue("@CountryNumber", id);
         command.Parameters.AddWithValue("@IsDeleted", false);
 
-        await using var reader = await command.ExecuteReaderAsync();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
 
-        return await reader.ReadAsync() ? MapBusFromReader(reader) : null;
+        return await reader.ReadAsync(cancellationToken) ? MapBusFromReader(reader) : null;
     }
 
-    public async Task<int> AddAsync(Bus entity)
+    public async Task<int> AddAsync(Bus entity, CancellationToken cancellationToken = default)
     {
-        await using var connection = _context.CreateConnection();
-        await connection.OpenAsync();
+        await using var connection = _context.CreateConnection() as MySqlConnection;
+        if (connection == null) throw new InvalidOperationException("Connection is not MySqlConnection");
 
-        var commandText = @"
+        await connection.OpenAsync(cancellationToken);
+
+        const string commandText = @"
             INSERT INTO Bus (CountryNumber, BoardingNumber, Brand, PassengerCapacity,
                            YearOfManufacture, Mileage, DateOfReceipt, CurrentStatusId)
             VALUES (@CountryNumber, @BoardingNumber, @Brand, @PassengerCapacity,
@@ -91,22 +96,25 @@ public class BusRepositoryAdoNet : IBusRepository
         command.Parameters.AddWithValue("@DateOfReceipt", entity.DateOfReceipt);
         command.Parameters.AddWithValue("@CurrentStatusId", entity.CurrentStatusId);
 
-        return await command.ExecuteNonQueryAsync();
+        return await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
-    public async Task<int> UpdateAsync(Bus entity)
+    public async Task<int> UpdateAsync(Bus entity, CancellationToken cancellationToken = default)
     {
-        await using var connection = _context.CreateConnection();
-        await connection.OpenAsync();
+        await using var connection = _context.CreateConnection() as MySqlConnection;
+        if (connection == null) throw new InvalidOperationException("Connection is not MySqlConnection");
 
-        var commandText = @"
+        await connection.OpenAsync(cancellationToken);
+
+        const string commandText = @"
             UPDATE Bus 
             SET BoardingNumber = @BoardingNumber,
                 Brand = @Brand,
                 PassengerCapacity = @PassengerCapacity,
                 Mileage = @Mileage,
                 CurrentStatusId = @CurrentStatusId,
-                WriteoffDate = @WriteoffDate
+                WriteoffDate = @WriteoffDate,
+                UpdatedAt = CURRENT_TIMESTAMP
             WHERE CountryNumber = @CountryNumber AND IsDeleted = @IsDeleted";
 
         await using var command = new MySqlCommand(commandText, connection);
@@ -117,33 +125,44 @@ public class BusRepositoryAdoNet : IBusRepository
         command.Parameters.AddWithValue("@PassengerCapacity", entity.PassengerCapacity);
         command.Parameters.AddWithValue("@Mileage", entity.Mileage);
         command.Parameters.AddWithValue("@CurrentStatusId", entity.CurrentStatusId);
-        command.Parameters.AddWithValue("@WriteoffDate", (object?)entity.WriteoffDate ?? DBNull.Value);
+        command.Parameters.AddWithValue("@WriteoffDate", entity.WriteoffDate.HasValue
+            ? entity.WriteoffDate.Value
+            : DBNull.Value);
         command.Parameters.AddWithValue("@IsDeleted", false);
 
-        return await command.ExecuteNonQueryAsync();
+        return await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
-    public async Task<int> DeleteAsync(object id)
+    public async Task<int> DeleteAsync(object id, CancellationToken cancellationToken = default)
     {
-        await using var connection = _context.CreateConnection();
-        await connection.OpenAsync();
+        await using var connection = _context.CreateConnection() as MySqlConnection;
+        if (connection == null) throw new InvalidOperationException("Connection is not MySqlConnection");
+
+        await connection.OpenAsync(cancellationToken);
 
         const string commandText = @"
             UPDATE Bus 
-            SET IsDeleted = @IsDeleted 
+            SET IsDeleted = @IsDeleted,
+                UpdatedAt = CURRENT_TIMESTAMP
             WHERE CountryNumber = @CountryNumber";
 
         await using var command = new MySqlCommand(commandText, connection);
         command.Parameters.AddWithValue("@IsDeleted", true);
         command.Parameters.AddWithValue("@CountryNumber", id);
 
-        return await command.ExecuteNonQueryAsync();
+        return await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
-    public async Task<Bus?> GetBusWithStatusAsync(string countryNumber)
+    // ========== IBusRepository специфічні методи ==========
+
+    public async Task<Bus?> GetBusWithStatusAsync(
+        string countryNumber,
+        CancellationToken cancellationToken = default)
     {
-        await using var connection = _context.CreateConnection();
-        await connection.OpenAsync();
+        await using var connection = _context.CreateConnection() as MySqlConnection;
+        if (connection == null) throw new InvalidOperationException("Connection is not MySqlConnection");
+
+        await connection.OpenAsync(cancellationToken);
 
         const string commandText = @"
             SELECT b.CountryNumber, b.BoardingNumber, b.Brand, b.PassengerCapacity,
@@ -158,27 +177,32 @@ public class BusRepositoryAdoNet : IBusRepository
         command.Parameters.AddWithValue("@CountryNumber", countryNumber);
         command.Parameters.AddWithValue("@IsDeleted", false);
 
-        await using var reader = await command.ExecuteReaderAsync();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
 
-        return await reader.ReadAsync() ? MapBusFromReader(reader) : null;
+        return await reader.ReadAsync(cancellationToken) ? MapBusFromReader(reader) : null;
     }
 
-    public async Task<IEnumerable<Bus>> GetBusesByStatusAsync(int statusId)
+    public async Task<IEnumerable<Bus>> GetBusesByStatusAsync(
+        int statusId,
+        CancellationToken cancellationToken = default)
     {
         var buses = new List<Bus>();
 
-        await using var connection = _context.CreateConnection();
-        await connection.OpenAsync();
+        await using var connection = _context.CreateConnection() as MySqlConnection;
+        if (connection == null) throw new InvalidOperationException("Connection is not MySqlConnection");
 
+        await connection.OpenAsync(cancellationToken);
+
+        // Використання збереженої процедури
         await using var command = new MySqlCommand("sp_GetBusesByStatus", connection)
         {
             CommandType = CommandType.StoredProcedure
         };
         command.Parameters.AddWithValue("@StatusId", statusId);
 
-        await using var reader = await command.ExecuteReaderAsync();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
 
-        while (await reader.ReadAsync())
+        while (await reader.ReadAsync(cancellationToken))
         {
             buses.Add(MapBusFromReader(reader));
         }
@@ -186,12 +210,15 @@ public class BusRepositoryAdoNet : IBusRepository
         return buses;
     }
 
-    public async Task<IEnumerable<Bus>> GetActiveBusesAsync()
+    public async Task<IEnumerable<Bus>> GetActiveBusesAsync(
+        CancellationToken cancellationToken = default)
     {
         var buses = new List<Bus>();
 
-        await using var connection = _context.CreateConnection();
-        await connection.OpenAsync();
+        await using var connection = _context.CreateConnection() as MySqlConnection;
+        if (connection == null) throw new InvalidOperationException("Connection is not MySqlConnection");
+
+        await connection.OpenAsync(cancellationToken);
 
         const string commandText = @"
             SELECT b.CountryNumber, b.BoardingNumber, b.Brand, b.PassengerCapacity,
@@ -208,9 +235,9 @@ public class BusRepositoryAdoNet : IBusRepository
         command.Parameters.AddWithValue("@IsDeleted", false);
         command.Parameters.AddWithValue("@StatusName", "Active");
 
-        await using var reader = await command.ExecuteReaderAsync();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
 
-        while (await reader.ReadAsync())
+        while (await reader.ReadAsync(cancellationToken))
         {
             buses.Add(MapBusFromReader(reader));
         }
@@ -218,11 +245,17 @@ public class BusRepositoryAdoNet : IBusRepository
         return buses;
     }
 
-    public async Task<int> UpdateBusStatusAsync(string countryNumber, int newStatusId)
+    public async Task<int> UpdateBusStatusAsync(
+        string countryNumber,
+        int newStatusId,
+        CancellationToken cancellationToken = default)
     {
-        await using var connection = _context.CreateConnection();
-        await connection.OpenAsync();
+        await using var connection = _context.CreateConnection() as MySqlConnection;
+        if (connection == null) throw new InvalidOperationException("Connection is not MySqlConnection");
 
+        await connection.OpenAsync(cancellationToken);
+
+        // Використання збереженої процедури
         await using var command = new MySqlCommand("sp_UpdateBusStatus", connection)
         {
             CommandType = CommandType.StoredProcedure
@@ -231,22 +264,32 @@ public class BusRepositoryAdoNet : IBusRepository
         command.Parameters.AddWithValue("@p_CountryNumber", countryNumber);
         command.Parameters.AddWithValue("@p_NewStatusId", newStatusId);
 
-        return await command.ExecuteNonQueryAsync();
+        return await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
-    public async Task<decimal> GetTotalMileageAsync(string countryNumber)
+    public async Task<decimal> GetTotalMileageAsync(
+        string countryNumber,
+        CancellationToken cancellationToken = default)
     {
-        await using var connection = _context.CreateConnection();
-        await connection.OpenAsync();
+        await using var connection = _context.CreateConnection() as MySqlConnection;
+        if (connection == null) throw new InvalidOperationException("Connection is not MySqlConnection");
 
-        const string commandText = "SELECT Mileage FROM Bus WHERE CountryNumber = @CountryNumber";
+        await connection.OpenAsync(cancellationToken);
+
+        const string commandText = @"
+            SELECT Mileage 
+            FROM Bus 
+            WHERE CountryNumber = @CountryNumber AND IsDeleted = @IsDeleted";
 
         await using var command = new MySqlCommand(commandText, connection);
         command.Parameters.AddWithValue("@CountryNumber", countryNumber);
+        command.Parameters.AddWithValue("@IsDeleted", false);
 
-        var result = await command.ExecuteScalarAsync();
+        var result = await command.ExecuteScalarAsync(cancellationToken);
         return result is not null and not DBNull ? Convert.ToDecimal(result) : 0;
     }
+
+    // ========== HELPER METHODS ==========
 
     private static Bus MapBusFromReader(IDataRecord reader)
     {
@@ -286,7 +329,14 @@ public class BusRepositoryAdoNet : IBusRepository
         static DateTime? GetNullableDateTime(IDataRecord r, string name)
         {
             int idx = r.GetOrdinal(name);
-            return r.IsDBNull(idx) ? (DateTime?)null : r.GetDateTime(idx);
+            return r.IsDBNull(idx) ? null : r.GetDateTime(idx);
+        }
+
+        static bool GetBooleanSafe(IDataRecord r, string name)
+        {
+            if (!HasColumn(r, name)) return false;
+            int idx = r.GetOrdinal(name);
+            return !r.IsDBNull(idx) && r.GetBoolean(idx);
         }
 
         var bus = new Bus
@@ -300,12 +350,12 @@ public class BusRepositoryAdoNet : IBusRepository
             DateOfReceipt = GetDateTimeSafe(reader, "DateOfReceipt"),
             WriteoffDate = GetNullableDateTime(reader, "WriteoffDate"),
             CurrentStatusId = GetInt32Safe(reader, "CurrentStatusId"),
-            IsDeleted = (HasColumn(reader, "IsDeleted") ? (reader.IsDBNull(reader.GetOrdinal("IsDeleted")) ? false : reader.GetBoolean(reader.GetOrdinal("IsDeleted"))) : false),
+            IsDeleted = GetBooleanSafe(reader, "IsDeleted"),
             CreatedAt = GetDateTimeSafe(reader, "CreatedAt"),
             UpdatedAt = GetDateTimeSafe(reader, "UpdatedAt")
         };
 
-        // Якщо є дані про статус (join)
+        // Якщо є дані про статус (з JOIN)
         if (HasColumn(reader, "StatusId") && !reader.IsDBNull(reader.GetOrdinal("StatusId")))
         {
             bus.CurrentStatus = new BusStatus
@@ -322,5 +372,4 @@ public class BusRepositoryAdoNet : IBusRepository
 
         return bus;
     }
-
 }
