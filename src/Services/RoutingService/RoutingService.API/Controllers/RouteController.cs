@@ -1,80 +1,176 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using RoutingService.Application.DTOs.Common;
 using RoutingService.Application.Interfaces;
+using RoutingService.Bll.DTOs.Common;
 using RoutingService.Core.DTOs;
 
 namespace RoutingService.API.Controllers
 {
+    /// <summary>
+    /// Controller for managing routes
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
+    [Produces("application/json")]
     public class RouteController : ControllerBase
     {
         private readonly IRouteService _routeService;
+        private readonly ILogger<RouteController> _logger;
 
-        public RouteController(IRouteService routeService)
+        public RouteController(IRouteService routeService, ILogger<RouteController> logger)
         {
             _routeService = routeService;
+            _logger = logger;
         }
 
-        [HttpGet]
+        /// <summary>
+        /// Get all routes (simple list)
+        /// </summary>
+        /// <returns>List of routes</returns>
+        [HttpGet("all")]
+        [ProducesResponseType(typeof(IEnumerable<RouteDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<RouteDto>>> GetAllRoutes()
         {
+            _logger.LogInformation("Getting all routes");
             var routes = await _routeService.GetAllRoutesAsync();
             return Ok(routes);
         }
 
+        /// <summary>
+        /// Get routes with pagination, filtering, and sorting
+        /// </summary>
+        /// <param name="parameters">Pagination and filter parameters</param>
+        /// <returns>Paged result of routes</returns>
+        [HttpGet]
+        [ProducesResponseType(typeof(PagedResultDto<RouteDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<PagedResultDto<RouteDto>>> GetRoutes(
+            [FromQuery] RouteFilterParameters parameters)
+        {
+            _logger.LogInformation(
+                "Getting routes page {Page} with page size {PageSize}",
+                parameters.Page,
+                parameters.PageSize);
+
+            var result = await _routeService.GetRoutesPagedAsync(parameters);
+
+            // Add pagination metadata to response headers
+            Response.Headers.Add("X-Pagination-Page", result.Page.ToString());
+            Response.Headers.Add("X-Pagination-PageSize", result.PageSize.ToString());
+            Response.Headers.Add("X-Pagination-TotalCount", result.TotalCount.ToString());
+            Response.Headers.Add("X-Pagination-TotalPages", result.TotalPages.ToString());
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get a specific route by ID
+        /// </summary>
+        /// <param name="id">Route ID</param>
+        /// <returns>Route details</returns>
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(RouteDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<RouteDto>> GetRouteById(int id)
         {
+            _logger.LogInformation("Getting route with ID {RouteId}", id);
             var route = await _routeService.GetRouteByIdAsync(id);
-            if (route == null)
-                return NotFound($"Route with ID {id} not found");
-
             return Ok(route);
         }
 
+        /// <summary>
+        /// Get a route with all its stops
+        /// </summary>
+        /// <param name="id">Route ID</param>
+        /// <returns>Route with stops</returns>
         [HttpGet("{id}/with-stops")]
+        [ProducesResponseType(typeof(RouteWithStopsDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<RouteWithStopsDto>> GetRouteWithStops(int id)
         {
+            _logger.LogInformation("Getting route {RouteId} with stops", id);
             var route = await _routeService.GetRouteWithStopsAsync(id);
-            if (route == null)
-                return NotFound($"Route with ID {id} not found");
-
             return Ok(route);
         }
 
+        /// <summary>
+        /// Create a new route
+        /// </summary>
+        /// <param name="dto">Route creation data</param>
+        /// <returns>Created route</returns>
         [HttpPost]
+        [ProducesResponseType(typeof(RouteDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<RouteDto>> CreateRoute([FromBody] CreateRouteDto dto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            _logger.LogInformation("Creating new route: {RouteNumber}", dto.RouteNumber);
 
             var route = await _routeService.CreateRouteAsync(dto);
-            return CreatedAtAction(nameof(GetRouteById), new { id = route.RouteId }, route);
+
+            _logger.LogInformation("Route created successfully with ID {RouteId}", route.RouteId);
+
+            return CreatedAtAction(
+                nameof(GetRouteById),
+                new { id = route.RouteId },
+                route);
         }
 
+        /// <summary>
+        /// Update an existing route
+        /// </summary>
+        /// <param name="id">Route ID</param>
+        /// <param name="dto">Route update data</param>
+        /// <returns>Updated route</returns>
         [HttpPut("{id}")]
-        public async Task<ActionResult<RouteDto>> UpdateRoute(int id, [FromBody] UpdateRouteDto dto)
+        [ProducesResponseType(typeof(RouteDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<RouteDto>> UpdateRoute(
+            int id,
+            [FromBody] UpdateRouteDto dto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            _logger.LogInformation("Updating route with ID {RouteId}", id);
 
             var route = await _routeService.UpdateRouteAsync(id, dto);
-            if (route == null)
-                return NotFound($"Route with ID {id} not found");
+
+            _logger.LogInformation("Route {RouteId} updated successfully", id);
 
             return Ok(route);
         }
 
+        /// <summary>
+        /// Delete a route
+        /// </summary>
+        /// <param name="id">Route ID</param>
+        /// <returns>No content</returns>
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteRoute(int id)
         {
-            var result = await _routeService.DeleteRouteAsync(id);
-            if (!result)
-                return NotFound($"Route with ID {id} not found");
+            _logger.LogInformation("Deleting route with ID {RouteId}", id);
+
+            await _routeService.DeleteRouteAsync(id);
+
+            _logger.LogInformation("Route {RouteId} deleted successfully", id);
 
             return NoContent();
+        }
+
+        /// <summary>
+        /// Check if a route exists
+        /// </summary>
+        /// <param name="id">Route ID</param>
+        /// <returns>Boolean result</returns>
+        [HttpHead("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> RouteExists(int id)
+        {
+            var exists = await _routeService.RouteExistsAsync(id);
+            return exists ? Ok() : NotFound();
         }
     }
 }

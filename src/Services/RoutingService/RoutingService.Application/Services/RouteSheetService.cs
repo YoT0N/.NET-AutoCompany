@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using RoutingService.Application.Interfaces;
 using RoutingService.Core.DTOs;
 using RoutingService.Core.Entities;
-using RoutingService.Domain.Interfaces.Repositories;
+using RoutingService.Domain.Repositories;
 
 namespace RoutingService.Bll.Services
 {

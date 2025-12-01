@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RoutingService.Domain.Interfaces.Repositories
+namespace RoutingService.Domain.Repositories
 {
-    internal interface IGenericRepository
+    internal interface IScheduleRepository
     {
     }
 }
