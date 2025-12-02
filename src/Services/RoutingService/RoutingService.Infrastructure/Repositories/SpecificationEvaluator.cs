@@ -2,7 +2,7 @@
 using RoutingService.Domain.Specifications.Base;
 using System.Linq;
 
-namespace RoutingService.Infrastructure.Repositories
+namespace RoutingService.Dal.Repositories
 {
     public static class SpecificationEvaluator<T> where T : class
     {

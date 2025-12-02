@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace RoutingService.Bll.DTOs.Common
+﻿namespace RoutingService.Bll.DTOs.Common
 {
     public class PagedResultDto<T>
     {

@@ -17,6 +17,9 @@ namespace RoutingService.Domain.Repositories
         IRouteRepository RouteRepository { get; }
         IRouteSheetRepository RouteSheetRepository { get; }
         IScheduleRepository ScheduleRepository { get; }
+        IBusInfoRepository BusInfoRepository { get; }
+        IRouteStopRepository RouteStopRepository { get; }
+        ITripRepository TripRepository { get; }
 
         Task<int> SaveChangesAsync();
         Task BeginTransactionAsync();

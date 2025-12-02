@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using RoutingService.Core.DTOs;
+using RoutingService.Bll.DTOs.Common;
+using RoutingService.Bll.DTOs;
 
 namespace RoutingService.Bll.Interfaces
 {
@@ -13,5 +14,7 @@ namespace RoutingService.Bll.Interfaces
         Task<ScheduleDto> CreateScheduleAsync(CreateScheduleDto dto);
         Task<ScheduleDto?> UpdateScheduleAsync(int id, UpdateScheduleDto dto);
         Task<bool> DeleteScheduleAsync(int id);
+
+        Task<PagedResultDto<ScheduleWithRouteDto>> GetSchedulesPagedAsync(ScheduleFilterParameters parameters);
     }
 }

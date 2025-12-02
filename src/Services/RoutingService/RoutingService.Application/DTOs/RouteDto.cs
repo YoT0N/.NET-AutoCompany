@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace RoutingService.Core.DTOs
+﻿namespace RoutingService.Bll.DTOs
 {
     public class RouteDto
     {

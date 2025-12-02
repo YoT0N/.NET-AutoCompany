@@ -1,4 +1,4 @@
-﻿namespace RoutingService.Core.DTOs
+﻿namespace RoutingService.Bll.DTOs
 {
     public class BusInfoDto
     {

@@ -1,19 +1,14 @@
 ﻿using AutoMapper;
-using RoutingService.Core.DTOs;
-using RoutingService.Core.Entities;
+using RoutingService.Bll.DTOs;
 using RoutingService.Domain.Entities;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace RoutingService.Application.Mapping
 {
-    /// <summary>
-    /// AutoMapper profile for entity to DTO mappings
-    /// </summary>
     public class MappingProfile : Profile
     {
         public MappingProfile()
         {
-            // BusInfo mappings
             CreateMap<BusInfo, BusInfoDto>();
             CreateMap<CreateBusInfoDto, BusInfo>()
                 .ForMember(dest => dest.BusId, opt => opt.Ignore())
@@ -21,7 +16,6 @@ namespace RoutingService.Application.Mapping
             CreateMap<UpdateBusInfoDto, BusInfo>()
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
-            // Route mappings
             CreateMap<Route, RouteDto>();
             CreateMap<CreateRouteDto, Route>()
                 .ForMember(dest => dest.RouteId, opt => opt.Ignore())
@@ -36,7 +30,6 @@ namespace RoutingService.Application.Mapping
             CreateMap<Route, RouteWithStopsDto>()
                 .ForMember(dest => dest.Stops, opt => opt.MapFrom(src => src.RouteStopAssignments));
 
-            // RouteStop mappings
             CreateMap<RouteStop, RouteStopDto>();
             CreateMap<CreateRouteStopDto, RouteStop>()
                 .ForMember(dest => dest.StopId, opt => opt.Ignore())
@@ -51,7 +44,6 @@ namespace RoutingService.Application.Mapping
                 .ForMember(dest => dest.Longitude, opt => opt.MapFrom(src => src.RouteStop.Longitude))
                 .ForMember(dest => dest.StopOrder, opt => opt.MapFrom(src => src.StopOrder));
 
-            // Schedule mappings
             CreateMap<Schedule, ScheduleDto>();
             CreateMap<CreateScheduleDto, Schedule>()
                 .ForMember(dest => dest.ScheduleId, opt => opt.Ignore())
@@ -63,7 +55,6 @@ namespace RoutingService.Application.Mapping
                 .ForMember(dest => dest.RouteNumber, opt => opt.MapFrom(src => src.Route.RouteNumber))
                 .ForMember(dest => dest.RouteName, opt => opt.MapFrom(src => src.Route.Name));
 
-            // RouteSheet mappings
             CreateMap<RouteSheet, RouteSheetDto>();
             CreateMap<CreateRouteSheetDto, RouteSheet>()
                 .ForMember(dest => dest.SheetId, opt => opt.Ignore())
@@ -79,7 +70,6 @@ namespace RoutingService.Application.Mapping
                 .ForMember(dest => dest.BusCountryNumber, opt => opt.MapFrom(src => src.BusInfo.CountryNumber))
                 .ForMember(dest => dest.BusBrand, opt => opt.MapFrom(src => src.BusInfo.Brand));
 
-            // Trip mappings
             CreateMap<Trip, TripDto>();
             CreateMap<CreateTripDto, Trip>()
                 .ForMember(dest => dest.TripId, opt => opt.Ignore())

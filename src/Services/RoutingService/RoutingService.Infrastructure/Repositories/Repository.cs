@@ -2,7 +2,6 @@
 using RoutingService.Dal.Data;
 using RoutingService.Domain.Repositories;
 using RoutingService.Domain.Specifications.Base;
-using RoutingService.Infrastructure.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;

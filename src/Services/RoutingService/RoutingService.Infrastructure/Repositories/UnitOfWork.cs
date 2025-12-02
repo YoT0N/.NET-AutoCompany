@@ -33,7 +33,6 @@ namespace RoutingService.Dal.Repositories
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        // Generic repository properties
         public IRepository<Route> Routes
             => _routes ??= new Repository<Route>(_context);
 

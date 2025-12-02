@@ -1,17 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using RoutingService.Domain.Entities;
-using RoutingService.Infrastructure.Data;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace RoutingService.Infrastructure.Data.Seeding
+namespace RoutingService.Dal.Data.Seeding
 {
-    /// <summary>
-    /// Main database seeder - coordinates all seeding operations
-    /// Implements idempotent seeding (safe to run multiple times)
-    /// </summary>
     public class DatabaseSeeder
     {
         private readonly RoutingDbContext _context;
@@ -23,16 +18,12 @@ namespace RoutingService.Infrastructure.Data.Seeding
             _logger = logger;
         }
 
-        /// <summary>
-        /// Seeds all data in correct order (respecting foreign keys)
-        /// </summary>
         public async Task SeedAsync()
         {
             try
             {
                 _logger.LogInformation("Starting database seeding...");
 
-                // Seed in order of dependencies
                 await SeedBusInfoAsync();
                 await SeedRouteStopsAsync();
                 await SeedRoutesAsync();
