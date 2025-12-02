@@ -103,12 +103,14 @@ namespace RoutingService.Bll.Services
 
         public async Task<PagedResultDto<TripDetailsDto>> GetTripsPagedAsync(TripFilterParameters parameters)
         {
-            var query = _unitOfWork.Trips
+            // Start with base query including related data
+            IQueryable<Trip> query = _unitOfWork.Trips
                 .Query()
                 .Include(t => t.RouteSheet)
                     .ThenInclude(rs => rs.Route)
                 .Include(t => t.RouteSheet)
-                .ThenInclude(rs => rs.BusInfo);
+                    .ThenInclude(rs => rs.BusInfo);
+
             // Apply filters
             if (parameters.SheetId.HasValue)
             {
@@ -142,6 +144,7 @@ namespace RoutingService.Bll.Services
 
             var totalCount = await query.CountAsync();
 
+            // Apply pagination
             var trips = await query
                 .Skip(parameters.Skip)
                 .Take(parameters.PageSize)

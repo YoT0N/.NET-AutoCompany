@@ -63,7 +63,8 @@ namespace RoutingService.Bll.Services
 
         public async Task<PagedResultDto<ScheduleWithRouteDto>> GetSchedulesPagedAsync(ScheduleFilterParameters parameters)
         {
-            var query = _unitOfWork.Schedules
+            // Start with base query including related data
+            IQueryable<Schedule> query = _unitOfWork.Schedules
                 .Query()
                 .Include(s => s.Route);
 
@@ -100,6 +101,7 @@ namespace RoutingService.Bll.Services
 
             var totalCount = await query.CountAsync();
 
+            // Apply pagination
             var schedules = await query
                 .Skip(parameters.Skip)
                 .Take(parameters.PageSize)

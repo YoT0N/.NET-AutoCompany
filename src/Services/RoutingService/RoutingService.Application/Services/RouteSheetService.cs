@@ -100,7 +100,8 @@ namespace RoutingService.Bll.Services
 
         public async Task<PagedResultDto<RouteSheetDetailsDto>> GetRouteSheetsPagedAsync(RouteSheetFilterParameters parameters)
         {
-            var query = _unitOfWork.RouteSheets
+            // Start with base query including related data
+            IQueryable<RouteSheet> query = _unitOfWork.RouteSheets
                 .Query()
                 .Include(rs => rs.Route)
                 .Include(rs => rs.BusInfo);
@@ -148,6 +149,7 @@ namespace RoutingService.Bll.Services
 
             var totalCount = await query.CountAsync();
 
+            // Apply pagination
             var sheets = await query
                 .Skip(parameters.Skip)
                 .Take(parameters.PageSize)

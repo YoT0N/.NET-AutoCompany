@@ -2,7 +2,6 @@
 using RoutingService.Dal.Data;
 using RoutingService.Domain.Entities;
 using RoutingService.Domain.Repositories;
-using RoutingService.Infrastructure.Repositories;
 using System;
 using System.Threading.Tasks;
 
