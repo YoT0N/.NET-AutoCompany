@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using RoutingService.Core.DTOs;
+using RoutingService.Bll.DTOs;
 
 namespace RoutingService.Bll.Validators.BusInfoValidators
 {

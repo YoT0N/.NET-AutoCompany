@@ -13,7 +13,6 @@ using RoutingService.Domain.Repositories;
 using Serilog;
 using Serilog.Events;
 
-// Configure Serilog
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
@@ -36,7 +35,6 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
 
-    // Add Serilog
     builder.Host.UseSerilog();
 
     // Add services using extension methods
@@ -46,10 +44,8 @@ try
 
     var app = builder.Build();
 
-    // Apply migrations and seed data
     await app.ApplyMigrationsAndSeedAsync();
 
-    // Configure middleware pipeline
     app.ConfigureMiddleware();
 
     Log.Information("RoutingService API started successfully");

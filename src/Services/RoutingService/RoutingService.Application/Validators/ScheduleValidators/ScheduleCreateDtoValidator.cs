@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using RoutingService.Core.DTOs;
+using RoutingService.Bll.DTOs;
 using System;
 
 namespace RoutingService.Bll.Validators.ScheduleValidators

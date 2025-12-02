@@ -15,12 +15,8 @@ namespace RoutingService.API.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-        /// <summary>
-        /// Register Application/Business Logic Layer services
-        /// </summary>
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
-            // Add AutoMapper
             services.AddAutoMapper(typeof(MappingProfile));
 
             // Register Application Services (BLL)
@@ -34,9 +30,6 @@ namespace RoutingService.API.Extensions
             return services;
         }
 
-        /// <summary>
-        /// Register Infrastructure/Data Access Layer services
-        /// </summary>
         public static IServiceCollection AddInfrastructureServices(
             this IServiceCollection services,
             IConfiguration configuration)
@@ -77,9 +70,6 @@ namespace RoutingService.API.Extensions
             return services;
         }
 
-        /// <summary>
-        /// Register API Layer services (Controllers, Validation, Swagger, etc.)
-        /// </summary>
         public static IServiceCollection AddApiServices(
             this IServiceCollection services,
             IConfiguration configuration,
@@ -93,10 +83,8 @@ namespace RoutingService.API.Extensions
                     options.SuppressModelStateInvalidFilter = false;
                 });
 
-            // Add FluentValidation
             services.AddFluentValidationAutoValidation(config =>
             {
-                // Don't disable DataAnnotations - use both
                 config.DisableDataAnnotationsValidation = false;
             });
 
@@ -106,7 +94,6 @@ namespace RoutingService.API.Extensions
             // Add API Explorer for Swagger
             services.AddEndpointsApiExplorer();
 
-            // Configure Swagger/OpenAPI
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo
@@ -134,7 +121,6 @@ Features:
                     }
                 });
 
-                // Include XML comments if available
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 if (File.Exists(xmlPath))
@@ -142,17 +128,14 @@ Features:
                     options.IncludeXmlComments(xmlPath);
                 }
 
-                // Enable annotations
                 options.EnableAnnotations();
 
-                // Add response types documentation
                 options.DescribeAllParametersInCamelCase();
             });
 
             // Configure CORS
             services.AddCors(options =>
             {
-                // Development policy - allow all
                 options.AddPolicy("AllowAll", policy =>
                 {
                     policy.AllowAnyOrigin()
@@ -165,7 +148,6 @@ Features:
                               "X-Pagination-TotalPages");
                 });
 
-                // Production policy - restrictive
                 var allowedOrigins = configuration.GetSection("AllowedOrigins").Get<string[]>()
                     ?? Array.Empty<string>();
 
@@ -183,31 +165,25 @@ Features:
                 });
             });
 
-            // Add ProblemDetails support
             services.AddProblemDetails(options =>
             {
                 options.CustomizeProblemDetails = context =>
                 {
-                    // Add trace ID for debugging
                     context.ProblemDetails.Extensions["traceId"] =
                         context.HttpContext.TraceIdentifier;
 
-                    // Add timestamp
                     context.ProblemDetails.Extensions["timestamp"] = DateTime.UtcNow;
 
-                    // Add request path
                     context.ProblemDetails.Instance =
                         context.HttpContext.Request.Path;
                 };
             });
 
-            // Add Response Compression
             services.AddResponseCompression(options =>
             {
                 options.EnableForHttps = true;
             });
 
-            // Add Health Checks
             services.AddHealthChecks()
                 .AddDbContextCheck<RoutingDbContext>("database");
 
