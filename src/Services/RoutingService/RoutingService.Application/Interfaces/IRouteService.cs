@@ -1,9 +1,9 @@
-﻿using RoutingService.Bll.DTOs.Common;
-using RoutingService.Bll.DTOs;
+﻿using RoutingService.Bll.DTOs;
+using RoutingService.Bll.DTOs.Common;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace RoutingService.Application.Interfaces
+namespace RoutingService.Bll.Interfaces
 {
     public interface IRouteService
     {

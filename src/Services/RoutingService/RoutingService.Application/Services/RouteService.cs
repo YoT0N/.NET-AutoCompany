@@ -1,10 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using RoutingService.Application.DTOs.Common;
-using RoutingService.Application.Interfaces;
+using RoutingService.Bll.DTOs;
 using RoutingService.Bll.DTOs.Common;
-using RoutingService.Core.DTOs;
-using RoutingService.Core.Entities;
+using RoutingService.Bll.Interfaces;
 using RoutingService.Domain.Entities;
 using RoutingService.Domain.Exceptions;
 using RoutingService.Domain.Repositories;
@@ -13,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace RoutingService.Application.Services
+namespace RoutingService.Bll.Services
 {
     public class RouteService : IRouteService
     {
@@ -90,7 +88,7 @@ namespace RoutingService.Application.Services
                 totalCount);
         }
 
-        public async Task<RouteDto?> GetRouteByIdAsync(int id)
+        public async Task<RouteDto> GetRouteByIdAsync(int id)
         {
             var route = await _unitOfWork.Routes.GetByIdAsync(id);
 
@@ -100,7 +98,7 @@ namespace RoutingService.Application.Services
             return _mapper.Map<RouteDto>(route);
         }
 
-        public async Task<RouteWithStopsDto?> GetRouteWithStopsAsync(int id)
+        public async Task<RouteWithStopsDto> GetRouteWithStopsAsync(int id)
         {
             // Use specific repository method with Eager Loading
             var route = await _unitOfWork.RouteRepository.GetRouteWithStopsAsync(id);
@@ -133,7 +131,7 @@ namespace RoutingService.Application.Services
             return _mapper.Map<RouteDto>(route);
         }
 
-        public async Task<RouteDto?> UpdateRouteAsync(int id, UpdateRouteDto dto)
+        public async Task<RouteDto> UpdateRouteAsync(int id, UpdateRouteDto dto)
         {
             var route = await _unitOfWork.Routes.GetByIdAsync(id);
 
@@ -163,7 +161,7 @@ namespace RoutingService.Application.Services
             return _mapper.Map<RouteDto>(route);
         }
 
-        public async Task<bool> DeleteRouteAsync(int id)
+        public async Task DeleteRouteAsync(int id)
         {
             var route = await _unitOfWork.Routes.GetByIdAsync(id);
 
@@ -172,8 +170,6 @@ namespace RoutingService.Application.Services
 
             _unitOfWork.Routes.Delete(route);
             await _unitOfWork.SaveChangesAsync();
-
-            return true;
         }
 
         public async Task<bool> RouteExistsAsync(int id)
