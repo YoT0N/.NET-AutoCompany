@@ -1,21 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
+using RoutingService.Dal.Data;
 using RoutingService.Domain.Entities;
 using RoutingService.Domain.Repositories;
-using RoutingService.Infrastructure.Data;
+using RoutingService.Infrastructure.Repositories;
 using System;
 using System.Threading.Tasks;
 
-namespace RoutingService.Infrastructure.Repositories
+namespace RoutingService.Dal.Repositories
 {
-    /// <summary>
-    /// Unit of Work pattern implementation
-    /// Manages transactions and coordinates repositories
-    /// </summary>
     public class UnitOfWork : IUnitOfWork
     {
         private readonly RoutingDbContext _context;
+        private IDbContextTransaction? _transaction;
 
-        // Generic repositories
         private IRepository<Route>? _routes;
         private IRepository<RouteStop>? _routeStops;
         private IRepository<RouteStopAssignment>? _routeStopAssignments;
@@ -24,10 +21,12 @@ namespace RoutingService.Infrastructure.Repositories
         private IRepository<Schedule>? _schedules;
         private IRepository<Trip>? _trips;
 
-        // Specific repositories
         private IRouteRepository? _routeRepository;
         private IRouteSheetRepository? _routeSheetRepository;
         private IScheduleRepository? _scheduleRepository;
+        private IBusInfoRepository? _busInfoRepository;
+        private IRouteStopRepository? _routeStopRepository;
+        private ITripRepository? _tripRepository;
 
         public UnitOfWork(RoutingDbContext context)
         {
@@ -36,90 +35,89 @@ namespace RoutingService.Infrastructure.Repositories
 
         // Generic repository properties
         public IRepository<Route> Routes
-        {
-            get { return _routes ??= new Repository<Route>(_context); }
-        }
+            => _routes ??= new Repository<Route>(_context);
 
         public IRepository<RouteStop> RouteStops
-        {
-            get { return _routeStops ??= new Repository<RouteStop>(_context); }
-        }
+            => _routeStops ??= new Repository<RouteStop>(_context);
 
         public IRepository<RouteStopAssignment> RouteStopAssignments
-        {
-            get { return _routeStopAssignments ??= new Repository<RouteStopAssignment>(_context); }
-        }
+            => _routeStopAssignments ??= new Repository<RouteStopAssignment>(_context);
 
         public IRepository<BusInfo> Buses
-        {
-            get { return _buses ??= new Repository<BusInfo>(_context); }
-        }
+            => _buses ??= new Repository<BusInfo>(_context);
 
         public IRepository<RouteSheet> RouteSheets
-        {
-            get { return _routeSheets ??= new Repository<RouteSheet>(_context); }
-        }
+            => _routeSheets ??= new Repository<RouteSheet>(_context);
 
         public IRepository<Schedule> Schedules
-        {
-            get { return _schedules ??= new Repository<Schedule>(_context); }
-        }
+            => _schedules ??= new Repository<Schedule>(_context);
 
         public IRepository<Trip> Trips
-        {
-            get { return _trips ??= new Repository<Trip>(_context); }
-        }
+            => _trips ??= new Repository<Trip>(_context);
 
         // Specific repository properties
         public IRouteRepository RouteRepository
-        {
-            get { return _routeRepository ??= new RouteRepository(_context); }
-        }
+            => _routeRepository ??= new RouteRepository(_context);
 
         public IRouteSheetRepository RouteSheetRepository
-        {
-            get { return _routeSheetRepository ??= new RouteSheetRepository(_context); }
-        }
+            => _routeSheetRepository ??= new RouteSheetRepository(_context);
 
         public IScheduleRepository ScheduleRepository
-        {
-            get { return _scheduleRepository ??= new ScheduleRepository(_context); }
-        }
+            => _scheduleRepository ??= new ScheduleRepository(_context);
 
-        /// <summary>
-        /// Save all changes to the database
-        /// </summary>
+        public IBusInfoRepository BusInfoRepository
+            => _busInfoRepository ??= new BusInfoRepository(_context);
+
+        public IRouteStopRepository RouteStopRepository
+            => _routeStopRepository ??= new RouteStopRepository(_context);
+
+        public ITripRepository TripRepository
+            => _tripRepository ??= new TripRepository(_context);
+
         public async Task<int> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync();
         }
 
-        /// <summary>
-        /// Begin a database transaction
-        /// </summary>
-        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        public async Task BeginTransactionAsync()
         {
-            return await _context.Database.BeginTransactionAsync();
+            _transaction = await _context.Database.BeginTransactionAsync();
         }
 
-        /// <summary>
-        /// Commit the current transaction
-        /// </summary>
         public async Task CommitTransactionAsync()
         {
-            await _context.Database.CommitTransactionAsync();
+            if (_transaction == null)
+                throw new InvalidOperationException("Transaction not started");
+
+            try
+            {
+                await _transaction.CommitAsync();
+            }
+            catch
+            {
+                await RollbackTransactionAsync();
+                throw;
+            }
+            finally
+            {
+                _transaction.Dispose();
+                _transaction = null;
+            }
         }
 
-        /// <summary>
-        /// Rollback the current transaction
-        /// </summary>
         public async Task RollbackTransactionAsync()
         {
-            await _context.Database.RollbackTransactionAsync();
+            if (_transaction != null)
+            {
+                await _transaction.RollbackAsync();
+                _transaction.Dispose();
+                _transaction = null;
+            }
         }
 
         public void Dispose()
         {
+            _transaction?.Dispose();
             _context?.Dispose();
         }
     }

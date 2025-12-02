@@ -1,19 +1,16 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using RoutingService.Dal.Data;
+using RoutingService.Domain.Repositories;
+using RoutingService.Domain.Specifications.Base;
+using RoutingService.Infrastructure.Repositories;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using RoutingService.Domain.Repositories;
-using RoutingService.Domain.Specifications.Base;
-using RoutingService.Infrastructure.Data;
 
-namespace RoutingService.Infrastructure.Repositories
+namespace RoutingService.Dal.Repositories
 {
-    /// <summary>
-    /// Generic Repository implementation with async operations and Specification support
-    /// </summary>
-    /// <typeparam name="T">Entity type</typeparam>
     public class Repository<T> : IRepository<T> where T : class
     {
         protected readonly RoutingDbContext _context;
@@ -88,27 +85,18 @@ namespace RoutingService.Infrastructure.Repositories
             return await _dbSet.CountAsync(predicate);
         }
 
-        /// <summary>
-        /// Find entities using Specification pattern
-        /// </summary>
         public virtual async Task<IEnumerable<T>> FindWithSpecificationAsync(ISpecification<T> specification)
         {
             var query = SpecificationEvaluator<T>.GetQuery(_dbSet.AsQueryable(), specification);
             return await query.ToListAsync();
         }
 
-        /// <summary>
-        /// Find single entity using Specification pattern
-        /// </summary>
         public virtual async Task<T?> FindOneWithSpecificationAsync(ISpecification<T> specification)
         {
             var query = SpecificationEvaluator<T>.GetQuery(_dbSet.AsQueryable(), specification);
             return await query.FirstOrDefaultAsync();
         }
 
-        /// <summary>
-        /// Count entities using Specification pattern
-        /// </summary>
         public virtual async Task<int> CountWithSpecificationAsync(ISpecification<T> specification)
         {
             var query = SpecificationEvaluator<T>.GetQuery(_dbSet.AsQueryable(), specification);

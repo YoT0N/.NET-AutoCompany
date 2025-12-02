@@ -11,7 +11,6 @@ namespace RoutingService.Dal.Data
         {
         }
 
-        // DbSets
         public DbSet<Route> Routes { get; set; }
         public DbSet<RouteStop> RouteStops { get; set; }
         public DbSet<RouteStopAssignment> RouteStopAssignments { get; set; }

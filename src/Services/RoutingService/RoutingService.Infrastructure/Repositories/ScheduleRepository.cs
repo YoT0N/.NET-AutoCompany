@@ -1,49 +1,20 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using RoutingService.Core.Entities;
 using RoutingService.Domain.Entities;
 using RoutingService.Domain.Repositories;
-using RoutingService.Infrastructure.Data;
+using RoutingService.Dal.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace RoutingService.Infrastructure.Repositories
+namespace RoutingService.Dal.Repositories
 {
-    /// <summary>
-    /// Schedule-specific repository with LINQ to Entities examples
-    /// Demonstrates: Complex LINQ queries, GroupBy, Join, Many-to-Many through intermediate entity
-    /// </summary>
-    public interface IScheduleRepository : IRepository<Schedule>
-    {
-        Task<IEnumerable<Schedule>> GetSchedulesByTimeRangeAsync(TimeSpan startTime, TimeSpan endTime);
-        Task<Dictionary<int, int>> GetScheduleCountByRouteAsync();
-        Task<IEnumerable<RouteStopScheduleInfo>> GetRouteStopsWithSchedulesAsync(int routeId);
-    }
-
-    /// <summary>
-    /// DTO for many-to-many query result
-    /// </summary>
-    public class RouteStopScheduleInfo
-    {
-        public int RouteId { get; set; }
-        public string RouteNumber { get; set; } = string.Empty;
-        public int StopId { get; set; }
-        public string StopName { get; set; } = string.Empty;
-        public int StopOrder { get; set; }
-        public List<TimeSpan> DepartureTimes { get; set; } = new();
-    }
-
     public class ScheduleRepository : Repository<Schedule>, IScheduleRepository
     {
         public ScheduleRepository(RoutingDbContext context) : base(context)
         {
         }
 
-        /// <summary>
-        /// LINQ to Entities: Filter schedules by time range
-        /// Demonstrates: Where, OrderBy, complex predicates
-        /// </summary>
         public async Task<IEnumerable<Schedule>> GetSchedulesByTimeRangeAsync(
             TimeSpan startTime,
             TimeSpan endTime)
@@ -56,10 +27,6 @@ namespace RoutingService.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        /// <summary>
-        /// LINQ to Entities: GroupBy and aggregate
-        /// Demonstrates: GroupBy, Count, ToDictionary
-        /// </summary>
         public async Task<Dictionary<int, int>> GetScheduleCountByRouteAsync()
         {
             return await _dbSet
@@ -68,15 +35,6 @@ namespace RoutingService.Infrastructure.Repositories
                 .ToDictionaryAsync(x => x.RouteId, x => x.Count);
         }
 
-        /// <summary>
-        /// LINQ to Entities: Many-to-Many through intermediate entity (RouteStopAssignment)
-        /// Demonstrates: Complex join, SelectMany, GroupBy with multiple properties
-        /// 
-        /// This query:
-        /// 1. Gets route stops for a specific route (through RouteStopAssignment)
-        /// 2. Joins with schedules for that route
-        /// 3. Groups by stop to show all departure times for each stop
-        /// </summary>
         public async Task<IEnumerable<RouteStopScheduleInfo>> GetRouteStopsWithSchedulesAsync(int routeId)
         {
             var result = await (
@@ -121,6 +79,20 @@ namespace RoutingService.Infrastructure.Repositories
                 .ToListAsync();
 
             return result;
+        }
+
+        public async Task<(TimeSpan? FirstDeparture, TimeSpan? LastDeparture)> GetRouteOperatingHoursAsync(int routeId)
+        {
+            var schedules = await _dbSet
+                .Where(s => s.RouteId == routeId)
+                .OrderBy(s => s.DepartureTime)
+                .Select(s => s.DepartureTime)
+                .ToListAsync();
+
+            if (!schedules.Any())
+                return (null, null);
+
+            return (schedules.First(), schedules.Last());
         }
     }
 }
