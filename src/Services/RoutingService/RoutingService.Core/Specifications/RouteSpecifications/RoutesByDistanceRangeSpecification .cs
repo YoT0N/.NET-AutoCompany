@@ -3,10 +3,6 @@ using RoutingService.Domain.Specifications.Base;
 
 namespace RoutingService.Domain.Specifications.RouteSpecifications
 {
-    /// <summary>
-    /// Specification for filtering routes by distance range
-    /// Demonstrates criteria building with optional parameters
-    /// </summary>
     public class RoutesByDistanceRangeSpecification : BaseSpecification<Route>
     {
         public RoutesByDistanceRangeSpecification(
@@ -14,7 +10,6 @@ namespace RoutingService.Domain.Specifications.RouteSpecifications
             decimal? maxDistance = null,
             string? routeNumber = null)
         {
-            // Build criteria based on provided parameters
             if (minDistance.HasValue)
             {
                 AddAndCriteria(r => r.DistanceKm >= minDistance.Value);
@@ -30,7 +25,6 @@ namespace RoutingService.Domain.Specifications.RouteSpecifications
                 AddAndCriteria(r => r.RouteNumber.Contains(routeNumber));
             }
 
-            // Order by distance (shortest first)
             ApplyOrderBy(r => r.DistanceKm);
         }
     }

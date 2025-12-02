@@ -4,10 +4,6 @@ using System;
 
 namespace RoutingService.Domain.Specifications.ScheduleSpecifications
 {
-    /// <summary>
-    /// Specification for filtering schedules by time range
-    /// Demonstrates time-based filtering
-    /// </summary>
     public class ScheduleByTimeRangeSpecification : BaseSpecification<Schedule>
     {
         public ScheduleByTimeRangeSpecification(
@@ -21,7 +17,6 @@ namespace RoutingService.Domain.Specifications.ScheduleSpecifications
                 AddInclude(s => s.Route);
             }
 
-            // Order by departure time
             ApplyOrderBy(s => s.DepartureTime);
         }
     }

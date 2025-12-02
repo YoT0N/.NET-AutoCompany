@@ -4,11 +4,6 @@ using System.Linq.Expressions;
 
 namespace RoutingService.Domain.Specifications.Base
 {
-    /// <summary>
-    /// Base implementation of Specification pattern
-    /// Provides common functionality for building query specifications
-    /// </summary>
-    /// <typeparam name="T">Entity type</typeparam>
     public abstract class BaseSpecification<T> : ISpecification<T>
     {
         protected BaseSpecification()
@@ -32,7 +27,6 @@ namespace RoutingService.Domain.Specifications.Base
         public bool IsPagingEnabled { get; private set; }
         public bool AsNoTracking { get; private set; }
 
-        // Fluent methods for building specifications
 
         protected virtual void AddInclude(Expression<Func<T, object>> includeExpression)
         {

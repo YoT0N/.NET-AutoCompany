@@ -6,14 +6,8 @@ using System.Threading.Tasks;
 
 namespace RoutingService.Domain.Repositories
 {
-    /// <summary>
-    /// Async Generic Repository pattern interface
-    /// Provides base CRUD operations for all entities
-    /// </summary>
-    /// <typeparam name="T">Entity type</typeparam>
     public interface IRepository<T> where T : class
     {
-        // Basic CRUD operations
         Task<T?> GetByIdAsync(params object[] keyValues);
         Task<IEnumerable<T>> GetAllAsync();
         Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
@@ -28,10 +22,8 @@ namespace RoutingService.Domain.Repositories
         void Delete(T entity);
         void DeleteRange(IEnumerable<T> entities);
 
-        // Query method for complex scenarios
         IQueryable<T> Query();
 
-        // Count operations
         Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null);
     }
 }

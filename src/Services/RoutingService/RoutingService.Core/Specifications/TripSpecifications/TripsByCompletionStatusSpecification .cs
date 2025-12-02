@@ -3,10 +3,6 @@ using RoutingService.Domain.Specifications.Base;
 
 namespace RoutingService.Domain.Specifications.TripSpecifications
 {
-    /// <summary>
-    /// Specification for filtering trips by completion status
-    /// Demonstrates boolean filtering with includes
-    /// </summary>
     public class TripsByCompletionStatusSpecification : BaseSpecification<Trip>
     {
         public TripsByCompletionStatusSpecification(
@@ -21,21 +17,14 @@ namespace RoutingService.Domain.Specifications.TripSpecifications
                 AddInclude("RouteSheet.BusInfo");
             }
 
-            // Order by scheduled departure
             ApplyOrderBy(t => t.ScheduledDeparture);
         }
 
-        /// <summary>
-        /// Constructor for pending trips (not completed)
-        /// </summary>
         public static TripsByCompletionStatusSpecification PendingTrips(bool includeRouteSheet = true)
         {
             return new TripsByCompletionStatusSpecification(false, includeRouteSheet);
         }
 
-        /// <summary>
-        /// Constructor for completed trips
-        /// </summary>
         public static TripsByCompletionStatusSpecification CompletedTrips(bool includeRouteSheet = true)
         {
             return new TripsByCompletionStatusSpecification(true, includeRouteSheet);

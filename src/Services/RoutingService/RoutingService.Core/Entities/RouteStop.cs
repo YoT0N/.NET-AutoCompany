@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace RoutingService.Domain.Entities
+﻿namespace RoutingService.Domain.Entities
 {
     public class RouteStop
     {

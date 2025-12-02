@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using RoutingService.Core.Entities;
+using RoutingService.Domain.Entities;
 
 namespace RoutingService.Dal.Data.Configurations
 {
