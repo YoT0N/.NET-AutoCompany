@@ -3,7 +3,7 @@ using RoutingService.Bll.DTOs;
 using RoutingService.Domain.Entities;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace RoutingService.Application.Mapping
+namespace RoutingService.Bll.Mapping
 {
     public class MappingProfile : Profile
     {

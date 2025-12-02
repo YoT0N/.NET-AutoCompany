@@ -1,14 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using RoutingService.Application.DTOs.Common;
-using RoutingService.Application.Interfaces;
 using RoutingService.Bll.DTOs.Common;
-using RoutingService.Core.DTOs;
+using RoutingService.Bll.Interfaces;
+using RoutingService.Bll.DTOs;
 
 namespace RoutingService.API.Controllers
 {
-    /// <summary>
-    /// Controller for managing routes
-    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     [Produces("application/json")]
@@ -23,10 +19,6 @@ namespace RoutingService.API.Controllers
             _logger = logger;
         }
 
-        /// <summary>
-        /// Get all routes (simple list)
-        /// </summary>
-        /// <returns>List of routes</returns>
         [HttpGet("all")]
         [ProducesResponseType(typeof(IEnumerable<RouteDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<RouteDto>>> GetAllRoutes()
@@ -36,11 +28,6 @@ namespace RoutingService.API.Controllers
             return Ok(routes);
         }
 
-        /// <summary>
-        /// Get routes with pagination, filtering, and sorting
-        /// </summary>
-        /// <param name="parameters">Pagination and filter parameters</param>
-        /// <returns>Paged result of routes</returns>
         [HttpGet]
         [ProducesResponseType(typeof(PagedResultDto<RouteDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -63,11 +50,6 @@ namespace RoutingService.API.Controllers
             return Ok(result);
         }
 
-        /// <summary>
-        /// Get a specific route by ID
-        /// </summary>
-        /// <param name="id">Route ID</param>
-        /// <returns>Route details</returns>
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(RouteDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -78,11 +60,6 @@ namespace RoutingService.API.Controllers
             return Ok(route);
         }
 
-        /// <summary>
-        /// Get a route with all its stops
-        /// </summary>
-        /// <param name="id">Route ID</param>
-        /// <returns>Route with stops</returns>
         [HttpGet("{id}/with-stops")]
         [ProducesResponseType(typeof(RouteWithStopsDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -93,11 +70,6 @@ namespace RoutingService.API.Controllers
             return Ok(route);
         }
 
-        /// <summary>
-        /// Create a new route
-        /// </summary>
-        /// <param name="dto">Route creation data</param>
-        /// <returns>Created route</returns>
         [HttpPost]
         [ProducesResponseType(typeof(RouteDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -116,12 +88,6 @@ namespace RoutingService.API.Controllers
                 route);
         }
 
-        /// <summary>
-        /// Update an existing route
-        /// </summary>
-        /// <param name="id">Route ID</param>
-        /// <param name="dto">Route update data</param>
-        /// <returns>Updated route</returns>
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(RouteDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -140,11 +106,6 @@ namespace RoutingService.API.Controllers
             return Ok(route);
         }
 
-        /// <summary>
-        /// Delete a route
-        /// </summary>
-        /// <param name="id">Route ID</param>
-        /// <returns>No content</returns>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -159,11 +120,6 @@ namespace RoutingService.API.Controllers
             return NoContent();
         }
 
-        /// <summary>
-        /// Check if a route exists
-        /// </summary>
-        /// <param name="id">Route ID</param>
-        /// <returns>Boolean result</returns>
         [HttpHead("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

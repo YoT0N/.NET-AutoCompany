@@ -10,10 +10,6 @@ using RoutingService.Domain.Exceptions;
 
 namespace RoutingService.API.Middleware
 {
-    /// <summary>
-    /// Global exception handling middleware
-    /// Catches all unhandled exceptions and returns standardized ProblemDetails responses
-    /// </summary>
     public class ExceptionHandlingMiddleware
     {
         private readonly RequestDelegate _next;
