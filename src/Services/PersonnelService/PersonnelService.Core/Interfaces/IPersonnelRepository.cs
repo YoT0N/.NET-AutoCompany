@@ -1,21 +1,30 @@
-﻿using PersonnelService.Core.Models;
+﻿using PersonnelService.Domain.Entities;
 
-namespace PersonnelService.Core.Interfaces
+namespace PersonnelService.Domain.Interfaces
 {
     public interface IPersonnelRepository
     {
-        Task<IEnumerable<Personnel>> GetAllAsync();
         Task<Personnel?> GetByIdAsync(string id);
         Task<Personnel?> GetByPersonnelIdAsync(int personnelId);
-        Task<IEnumerable<Personnel>> GetByPositionAsync(string position);
-        Task<IEnumerable<Personnel>> GetByStatusAsync(string status);
-        Task<IEnumerable<Personnel>> GetActivePersonnelAsync();
-        Task<Personnel> CreateAsync(Personnel personnel);
-        Task<bool> UpdateAsync(string id, Personnel personnel);
-        Task<bool> DeleteAsync(string id);
-        Task<bool> UpdateStatusAsync(string id, string status);
-        Task<bool> UpdateContactsAsync(string id, PersonnelContacts contacts);
-        Task<bool> AddDocumentAsync(string id, PersonnelDocumentInfo document);
+        Task<IReadOnlyCollection<Personnel>> GetAllAsync();
+        Task<IReadOnlyCollection<Personnel>> GetByPositionAsync(string position);
+        Task<IReadOnlyCollection<Personnel>> GetByStatusAsync(string status);
+        Task<IReadOnlyCollection<Personnel>> GetActivePersonnelAsync();
+
+        Task AddAsync(Personnel personnel);
+        Task UpdateAsync(Personnel personnel);
+        Task DeleteAsync(string id);
+
+        Task<bool> ExistsAsync(string id, CancellationToken cancellationToken = default);
+        Task<bool> ExistsByPersonnelIdAsync(int personnelId, CancellationToken cancellationToken = default);
         Task<int> GetNextPersonnelIdAsync();
+
+        // MongoDB specific - aggregation, pagination
+        Task<IReadOnlyCollection<Personnel>> SearchAsync(
+            string? searchText = null,
+            string? position = null,
+            string? status = null,
+            int skip = 0,
+            int limit = 10);
     }
 }

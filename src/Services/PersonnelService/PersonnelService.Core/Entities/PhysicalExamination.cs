@@ -1,46 +1,81 @@
-﻿using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
+﻿using MongoDB.Bson.Serialization.Attributes;
+using PersonnelService.Domain.Common;
+using PersonnelService.Domain.ValueObjects;
+using PersonnelService.Domain.Exceptions;
 
-namespace PersonnelService.Core.Models
+namespace PersonnelService.Domain.Entities
 {
-    public class PhysicalExamination
+    public class PhysicalExamination : BaseEntity
     {
-        [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string? Id { get; set; }
-
         [BsonElement("personnelId")]
-        public int PersonnelId { get; set; }
+        public int PersonnelId { get; private set; }
 
         [BsonElement("examDate")]
-        [BsonDateTimeOptions(Kind = DateTimeKind.Utc, Representation = BsonType.String)]
-        public DateTime ExamDate { get; set; }
+        [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+        public DateTime ExamDate { get; private set; }
 
         [BsonElement("result")]
-        public string Result { get; set; } = string.Empty;
+        public string Result { get; private set; } = string.Empty;
 
         [BsonElement("doctorName")]
-        public string DoctorName { get; set; } = string.Empty;
+        public string DoctorName { get; private set; } = string.Empty;
 
         [BsonElement("notes")]
-        public string? Notes { get; set; }
+        public string? Notes { get; private set; }
 
         [BsonElement("metrics")]
-        public ExaminationMetrics Metrics { get; set; } = new ExaminationMetrics();
-    }
+        public ExaminationMetricsVO Metrics { get; private set; }
 
-    public class ExaminationMetrics
-    {
-        [BsonElement("height")]
-        public int Height { get; set; }
+        public PhysicalExamination(
+            int personnelId,
+            DateTime examDate,
+            string result,
+            string doctorName,
+            ExaminationMetricsVO metrics,
+            string? notes = null)
+        {
+            if (personnelId <= 0)
+                throw new DomainException("PersonnelId must be positive");
 
-        [BsonElement("weight")]
-        public int Weight { get; set; }
+            if (string.IsNullOrWhiteSpace(result))
+                throw new DomainException("Examination result cannot be empty");
 
-        [BsonElement("bloodPressure")]
-        public string BloodPressure { get; set; } = string.Empty;
+            if (string.IsNullOrWhiteSpace(doctorName))
+                throw new DomainException("Doctor name cannot be empty");
 
-        [BsonElement("vision")]
-        public string Vision { get; set; } = string.Empty;
+            PersonnelId = personnelId;
+            ExamDate = examDate;
+            Result = result;
+            DoctorName = doctorName;
+            Metrics = metrics ?? throw new DomainException("Metrics cannot be null");
+            Notes = notes;
+        }
+
+        [BsonConstructor]
+        private PhysicalExamination() { }
+
+        public void UpdateExamination(
+            string result,
+            string doctorName,
+            ExaminationMetricsVO metrics,
+            string? notes = null)
+        {
+            if (string.IsNullOrWhiteSpace(result))
+                throw new DomainException("Examination result cannot be empty");
+
+            if (string.IsNullOrWhiteSpace(doctorName))
+                throw new DomainException("Doctor name cannot be empty");
+
+            Result = result;
+            DoctorName = doctorName;
+            Metrics = metrics ?? throw new DomainException("Metrics cannot be null");
+            Notes = notes;
+            Touch();
+        }
+
+        public bool IsPassed() => Result.Equals("Passed", StringComparison.OrdinalIgnoreCase);
+
+        public bool IsRecent(int daysThreshold = 365) =>
+            ExamDate >= DateTime.UtcNow.AddDays(-daysThreshold);
     }
 }

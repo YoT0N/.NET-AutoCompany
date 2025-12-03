@@ -1,52 +1,114 @@
-﻿using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
+﻿using MongoDB.Bson.Serialization.Attributes;
+using PersonnelService.Core.DTOs;
+using PersonnelService.Domain.Common;
+using PersonnelService.Domain.Exceptions;
+using PersonnelService.Domain.ValueObjects;
 
-namespace PersonnelService.Core.Models
+namespace PersonnelService.Domain.Entities
 {
-    public class WorkShiftLog
+    public class WorkShiftLog : BaseEntity
     {
-        [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string? Id { get; set; }
-
         [BsonElement("personnelId")]
-        public int PersonnelId { get; set; }
+        public int PersonnelId { get; private set; }
 
         [BsonElement("shiftDate")]
-        [BsonDateTimeOptions(Kind = DateTimeKind.Utc, Representation = BsonType.String)]
-        public DateTime ShiftDate { get; set; }
+        [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+        public DateTime ShiftDate { get; private set; }
 
         [BsonElement("startTime")]
-        public string StartTime { get; set; } = string.Empty;
+        public string StartTime { get; private set; } = string.Empty;
 
         [BsonElement("endTime")]
-        public string EndTime { get; set; } = string.Empty;
+        public string EndTime { get; private set; } = string.Empty;
 
         [BsonElement("bus")]
-        public BusInfo Bus { get; set; } = new BusInfo();
+        public BusInfoVO Bus { get; private set; }
 
         [BsonElement("route")]
-        public RouteInfo Route { get; set; } = new RouteInfo();
+        public RouteInfoVO Route { get; private set; }
 
         [BsonElement("status")]
-        public string Status { get; set; } = string.Empty;
-    }
+        public string Status { get; private set; } = "Scheduled";
 
-    public class BusInfo
-    {
-        [BsonElement("busCountryNumber")]
-        public string BusCountryNumber { get; set; } = string.Empty;
+        public WorkShiftLog(
+            int personnelId,
+            DateTime shiftDate,
+            string startTime,
+            string endTime,
+            BusInfoVO bus,
+            RouteInfoVO route)
+        {
+            if (personnelId <= 0)
+                throw new DomainException("PersonnelId must be positive");
 
-        [BsonElement("brand")]
-        public string Brand { get; set; } = string.Empty;
-    }
+            if (string.IsNullOrWhiteSpace(startTime))
+                throw new DomainException("Start time cannot be empty");
 
-    public class RouteInfo
-    {
-        [BsonElement("routeNumber")]
-        public string RouteNumber { get; set; } = string.Empty;
+            if (string.IsNullOrWhiteSpace(endTime))
+                throw new DomainException("End time cannot be empty");
 
-        [BsonElement("distanceKm")]
-        public double DistanceKm { get; set; }
+            PersonnelId = personnelId;
+            ShiftDate = shiftDate;
+            StartTime = startTime;
+            EndTime = endTime;
+            Bus = bus ?? throw new DomainException("Bus info cannot be null");
+            Route = route ?? throw new DomainException("Route info cannot be null");
+            Status = "Scheduled";
+        }
+
+        [BsonConstructor]
+        private WorkShiftLog() { }
+
+        public void UpdateShiftDetails(
+            DateTime shiftDate,
+            string startTime,
+            string endTime,
+            BusInfoVO bus,
+            RouteInfoVO route)
+        {
+            if (string.IsNullOrWhiteSpace(startTime))
+                throw new DomainException("Start time cannot be empty");
+
+            if (string.IsNullOrWhiteSpace(endTime))
+                throw new DomainException("End time cannot be empty");
+
+            ShiftDate = shiftDate;
+            StartTime = startTime;
+            EndTime = endTime;
+            Bus = bus ?? throw new DomainException("Bus info cannot be null");
+            Route = route ?? throw new DomainException("Route info cannot be null");
+            Touch();
+        }
+
+        public void UpdateStatus(string status)
+        {
+            var validStatuses = new[] { "Scheduled", "InProgress", "Completed", "Cancelled" };
+            if (!validStatuses.Contains(status))
+                throw new DomainException($"Invalid shift status: {status}");
+
+            Status = status;
+            Touch();
+        }
+
+        public void Complete()
+        {
+            if (Status == "Cancelled")
+                throw new DomainException("Cannot complete a cancelled shift");
+
+            Status = "Completed";
+            Touch();
+        }
+
+        public void Cancel()
+        {
+            if (Status == "Completed")
+                throw new DomainException("Cannot cancel a completed shift");
+
+            Status = "Cancelled";
+            Touch();
+        }
+
+        public bool IsCompleted() => Status == "Completed";
+        public bool IsCancelled() => Status == "Cancelled";
     }
 }

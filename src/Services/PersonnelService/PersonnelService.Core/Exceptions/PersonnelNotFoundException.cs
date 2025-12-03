@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PersonnelService.Domain.Exceptions
+﻿namespace PersonnelService.Domain.Exceptions
 {
-    internal class PersonnelNotFoundException
+    public class PersonnelNotFoundException : DomainException
     {
+        public PersonnelNotFoundException(string message) : base(message) { }
+
+        public PersonnelNotFoundException(int personnelId)
+            : base($"Personnel with ID {personnelId} was not found") { }
     }
 }

@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PersonnelService.Domain.Exceptions
+﻿namespace PersonnelService.Domain.Exceptions
 {
-    internal class InvalidPersonnelStatusException
+    public class InvalidPersonnelStatusException : DomainException
     {
+        public InvalidPersonnelStatusException(string message) : base(message) { }
     }
 }

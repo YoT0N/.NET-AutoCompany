@@ -1,19 +1,22 @@
-﻿using PersonnelService.Core.Models;
+﻿using PersonnelService.Domain.Entities;
 
-namespace PersonnelService.Core.Interfaces
+namespace PersonnelService.Domain.Interfaces
 {
     public interface IExaminationRepository
     {
-        Task<IEnumerable<PhysicalExamination>> GetAllAsync();
         Task<PhysicalExamination?> GetByIdAsync(string id);
-        Task<IEnumerable<PhysicalExamination>> GetByPersonnelIdAsync(int personnelId);
+        Task<IReadOnlyCollection<PhysicalExamination>> GetAllAsync();
+        Task<IReadOnlyCollection<PhysicalExamination>> GetByPersonnelIdAsync(int personnelId);
         Task<PhysicalExamination?> GetLatestByPersonnelIdAsync(int personnelId);
-        Task<IEnumerable<PhysicalExamination>> GetByResultAsync(string result);
-        Task<IEnumerable<PhysicalExamination>> GetByDateRangeAsync(DateTime startDate, DateTime endDate);
-        Task<IEnumerable<PhysicalExamination>> GetByDoctorAsync(string doctorName);
-        Task<PhysicalExamination> CreateAsync(PhysicalExamination examination);
-        Task<bool> UpdateAsync(string id, PhysicalExamination examination);
-        Task<bool> DeleteAsync(string id);
-        Task<bool> DeleteByPersonnelIdAsync(int personnelId);
+        Task<IReadOnlyCollection<PhysicalExamination>> GetByResultAsync(string result);
+        Task<IReadOnlyCollection<PhysicalExamination>> GetByDateRangeAsync(DateTime startDate, DateTime endDate);
+        Task<IReadOnlyCollection<PhysicalExamination>> GetByDoctorAsync(string doctorName);
+
+        Task AddAsync(PhysicalExamination examination);
+        Task UpdateAsync(PhysicalExamination examination);
+        Task DeleteAsync(string id);
+
+        Task<bool> ExistsAsync(string id, CancellationToken cancellationToken = default);
+        Task<bool> HasValidExaminationAsync(int personnelId, int validityDays = 365);
     }
 }
