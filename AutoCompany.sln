@@ -31,7 +31,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoutingService.Bll", "src\S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonnelService.API", "src\Services\PersonnelService\PersonnelService.API\PersonnelService.API.csproj", "{34A79B97-A943-47DF-9D50-0F5ECDF90C4E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonnelService.Core", "src\Services\PersonnelService\PersonnelService.Core\PersonnelService.Core.csproj", "{8A9656C4-1DF7-4565-8B74-45AAE962FBB2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonnelService.Domain", "src\Services\PersonnelService\PersonnelService.Core\PersonnelService.Domain.csproj", "{8A9656C4-1DF7-4565-8B74-45AAE962FBB2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonnelService.Infrastructure", "src\Services\PersonnelService\PersonnelService.Infrastructure\PersonnelService.Infrastructure.csproj", "{9EFC5CEB-5135-4E58-B118-257A249086A3}"
 EndProject

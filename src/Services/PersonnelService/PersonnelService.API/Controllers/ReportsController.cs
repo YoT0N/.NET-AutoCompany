@@ -1,6 +1,6 @@
 ﻿namespace PersonnelService.API.Controllers
 {
-    public class PersonnelController
+    public class ReportsController
     {
     }
 }
