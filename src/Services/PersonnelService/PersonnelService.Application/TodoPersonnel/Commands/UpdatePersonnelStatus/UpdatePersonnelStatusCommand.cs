@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using PersonnelService.Application.Common.Interfaces;
 
 namespace PersonnelService.Application.TodoPersonnel.Commands.UpdatePersonnelStatus
 {
-    internal class UpdatePersonnelStatusCommand
+    public class UpdatePersonnelStatusCommand : ICommand<string>
     {
+        public string Id { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
     }
 }
