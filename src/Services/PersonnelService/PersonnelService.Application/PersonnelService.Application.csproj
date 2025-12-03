@@ -9,18 +9,12 @@
 		<ProjectReference Include="..\PersonnelService.Core\PersonnelService.Domain.csproj" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Folder Include="TodoDocuments\Commands\DeleteDocument\" />
 	  <Folder Include="TodoDocuments\Commands\UpdateDocument\" />
 	  <Folder Include="TodoDocuments\Queries\GetDocumentById\" />
-	  <Folder Include="TodoDocuments\Queries\GetExpiringDocuments\" />
-	  <Folder Include="TodoExaminations\Commands\DeleteExamination\" />
 	  <Folder Include="TodoExaminations\Commands\UpdateExamination\" />
 	  <Folder Include="TodoExaminations\Queries\GetExaminationById\" />
-	  <Folder Include="TodoExaminations\Queries\GetLatestExamination\" />
-	  <Folder Include="TodoWorkShifts\Commands\DeleteWorkShift\" />
 	  <Folder Include="TodoWorkShifts\Commands\UpdateWorkShift\" />
 	  <Folder Include="TodoWorkShifts\Queries\GetWorkShiftById\" />
-	  <Folder Include="TodoWorkShifts\Queries\GetWorkShiftsByDateRange\" />
 	</ItemGroup>
 	<ItemGroup>
 	  <PackageReference Include="AutoMapper" Version="12.0.1" />
