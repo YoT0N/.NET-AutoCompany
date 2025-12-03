@@ -32,60 +32,67 @@ namespace PersonnelService.Infrastructure.Seeders
 
             if (!personnelList.Any()) return;
 
-            var seedData = new List<WorkShiftLog>
+            var seedData = new List<WorkShiftLog>();
+
+            // Shift 1 - Completed
+            var shift1 = new WorkShiftLog(
+                personnelId: personnelList[0].PersonnelId,
+                shiftDate: DateTime.UtcNow.Date.AddDays(-2),
+                startTime: "06:00",
+                endTime: "14:00",
+                bus: new BusInfoVO("AA1234BB", "Mercedes-Benz"),
+                route: new RouteInfoVO("15А", 28.5)
+            )
             {
-                new WorkShiftLog(
-                    personnelId: personnelList[0].PersonnelId,
-                    shiftDate: DateTime.UtcNow.Date.AddDays(-2),
-                    startTime: "06:00",
-                    endTime: "14:00",
-                    bus: new BusInfoVO("AA1234BB", "Mercedes-Benz"),
-                    route: new RouteInfoVO("15А", 28.5)
-                )
-                {
-                    Id = ObjectId.GenerateNewId().ToString(),
-                    Status = "Completed"
-                },
-
-                new WorkShiftLog(
-                    personnelId: personnelList[0].PersonnelId,
-                    shiftDate: DateTime.UtcNow.Date.AddDays(-1),
-                    startTime: "06:00",
-                    endTime: "14:00",
-                    bus: new BusInfoVO("AA1234BB", "Mercedes-Benz"),
-                    route: new RouteInfoVO("15А", 28.5)
-                )
-                {
-                    Id = ObjectId.GenerateNewId().ToString(),
-                    Status = "Completed"
-                },
-
-                new WorkShiftLog(
-                    personnelId: personnelList[0].PersonnelId,
-                    shiftDate: DateTime.UtcNow.Date,
-                    startTime: "06:00",
-                    endTime: "14:00",
-                    bus: new BusInfoVO("AA1234BB", "Mercedes-Benz"),
-                    route: new RouteInfoVO("15А", 28.5)
-                )
-                {
-                    Id = ObjectId.GenerateNewId().ToString(),
-                    Status = "InProgress"
-                },
-
-                new WorkShiftLog(
-                    personnelId: personnelList[2].PersonnelId,
-                    shiftDate: DateTime.UtcNow.Date,
-                    startTime: "14:00",
-                    endTime: "22:00",
-                    bus: new BusInfoVO("BB5678CC", "Volkswagen"),
-                    route: new RouteInfoVO("23", 35.2)
-                )
-                {
-                    Id = ObjectId.GenerateNewId().ToString(),
-                    Status = "Scheduled"
-                }
+                Id = ObjectId.GenerateNewId().ToString()
             };
+            shift1.UpdateStatus("Completed");
+            seedData.Add(shift1);
+
+            // Shift 2 - Completed
+            var shift2 = new WorkShiftLog(
+                personnelId: personnelList[0].PersonnelId,
+                shiftDate: DateTime.UtcNow.Date.AddDays(-1),
+                startTime: "06:00",
+                endTime: "14:00",
+                bus: new BusInfoVO("AA1234BB", "Mercedes-Benz"),
+                route: new RouteInfoVO("15А", 28.5)
+            )
+            {
+                Id = ObjectId.GenerateNewId().ToString()
+            };
+            shift2.UpdateStatus("Completed");
+            seedData.Add(shift2);
+
+            // Shift 3 - InProgress
+            var shift3 = new WorkShiftLog(
+                personnelId: personnelList[0].PersonnelId,
+                shiftDate: DateTime.UtcNow.Date,
+                startTime: "06:00",
+                endTime: "14:00",
+                bus: new BusInfoVO("AA1234BB", "Mercedes-Benz"),
+                route: new RouteInfoVO("15А", 28.5)
+            )
+            {
+                Id = ObjectId.GenerateNewId().ToString()
+            };
+            shift3.UpdateStatus("InProgress");
+            seedData.Add(shift3);
+
+            // Shift 4 - Scheduled (default)
+            var shift4 = new WorkShiftLog(
+                personnelId: personnelList[2].PersonnelId,
+                shiftDate: DateTime.UtcNow.Date,
+                startTime: "14:00",
+                endTime: "22:00",
+                bus: new BusInfoVO("BB5678CC", "Volkswagen"),
+                route: new RouteInfoVO("23", 35.2)
+            )
+            {
+                Id = ObjectId.GenerateNewId().ToString()
+            };
+            // Залишаємо default статус "Scheduled"
+            seedData.Add(shift4);
 
             await _workShifts.InsertManyAsync(seedData, cancellationToken: cancellationToken);
         }

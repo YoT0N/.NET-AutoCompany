@@ -1,12 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using PersonnelService.Application.Common.Interfaces;
+using PersonnelService.Application.Common.Mappings;
 
 namespace PersonnelService.Application.TodoPersonnel.Queries.GetPersonnelById
 {
-    internal class GetPersonnelByIdQuery
+    public class GetPersonnelByIdQuery : IQuery<PersonnelDto>
     {
+        public string Id { get; set; } = string.Empty;
+
+        public GetPersonnelByIdQuery(string id)
+        {
+            Id = id;
+        }
     }
 }

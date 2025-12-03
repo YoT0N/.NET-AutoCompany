@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MediatR;
 
 namespace PersonnelService.Application.Common.Interfaces
 {
-    internal interface ICommand
-    {
-    }
+    // Command без результату
+    public interface ICommand : IRequest { }
 }

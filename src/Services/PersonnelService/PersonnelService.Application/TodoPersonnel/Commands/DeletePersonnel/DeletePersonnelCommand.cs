@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using PersonnelService.Application.Common.Interfaces;
 
 namespace PersonnelService.Application.TodoPersonnel.Commands.DeletePersonnel
 {
-    internal class DeletePersonnelCommand
+    public class DeletePersonnelCommand : ICommand<string>
     {
+        public string Id { get; set; } = string.Empty;
     }
 }
