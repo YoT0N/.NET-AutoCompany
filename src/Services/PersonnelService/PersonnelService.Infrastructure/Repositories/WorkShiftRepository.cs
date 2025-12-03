@@ -1,116 +1,120 @@
-﻿using MongoDB.Driver;
-using PersonnelService.Core.Interfaces;
-using PersonnelService.Core.Models;
-using PersonnelService.Infrastructure.Data;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
+using PersonnelService.Domain.Entities;
+using PersonnelService.Domain.Interfaces;
+using PersonnelService.Infrastructure.Context;
 
 namespace PersonnelService.Infrastructure.Repositories
 {
-    public class WorkShiftRepository : IWorkShiftRepository
+    public class WorkShiftRepository : MongoRepository<WorkShiftLog>, IWorkShiftRepository
     {
-        private readonly IMongoCollection<WorkShiftLog> _collection;
-
         public WorkShiftRepository(MongoDbContext context)
-        {
-            _collection = context.WorkShiftLogs;
-        }
+            : base(context.WorkShifts) { }
 
-        public async Task<IEnumerable<WorkShiftLog>> GetAllAsync()
+        public async Task<IReadOnlyCollection<WorkShiftLog>> GetByPersonnelIdAsync(int personnelId)
         {
-            return await _collection.Find(_ => true).ToListAsync();
-        }
-
-        public async Task<WorkShiftLog?> GetByIdAsync(string id)
-        {
-            return await _collection.Find(w => w.Id == id).FirstOrDefaultAsync();
-        }
-
-        public async Task<IEnumerable<WorkShiftLog>> GetByPersonnelIdAsync(int personnelId)
-        {
-            return await _collection
+            var list = await _collection
                 .Find(w => w.PersonnelId == personnelId)
                 .SortByDescending(w => w.ShiftDate)
                 .ToListAsync();
+            return list.AsReadOnly();
         }
 
-        public async Task<IEnumerable<WorkShiftLog>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
+        public async Task<IReadOnlyCollection<WorkShiftLog>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
         {
-            return await _collection
+            var list = await _collection
                 .Find(w => w.ShiftDate >= startDate && w.ShiftDate <= endDate)
-                .ToListAsync();
-        }
-
-        public async Task<IEnumerable<WorkShiftLog>> GetByPersonnelAndDateRangeAsync(int personnelId, DateTime startDate, DateTime endDate)
-        {
-            return await _collection
-                .Find(w => w.PersonnelId == personnelId && w.ShiftDate >= startDate && w.ShiftDate <= endDate)
                 .SortBy(w => w.ShiftDate)
                 .ToListAsync();
+            return list.AsReadOnly();
         }
 
-        public async Task<IEnumerable<WorkShiftLog>> GetByBusNumberAsync(string busCountryNumber)
+        public async Task<IReadOnlyCollection<WorkShiftLog>> GetByPersonnelAndDateRangeAsync(
+            int personnelId,
+            DateTime startDate,
+            DateTime endDate)
         {
-            return await _collection
-                .Find(w => w.Bus.BusCountryNumber == busCountryNumber)
+            var list = await _collection
+                .Find(w => w.PersonnelId == personnelId
+                    && w.ShiftDate >= startDate
+                    && w.ShiftDate <= endDate)
+                .SortBy(w => w.ShiftDate)
                 .ToListAsync();
+            return list.AsReadOnly();
         }
 
-        public async Task<IEnumerable<WorkShiftLog>> GetByRouteNumberAsync(string routeNumber)
+        public async Task<IReadOnlyCollection<WorkShiftLog>> GetByBusNumberAsync(string busCountryNumber)
         {
-            return await _collection
-                .Find(w => w.Route.RouteNumber == routeNumber)
+            var filter = Builders<WorkShiftLog>.Filter.Eq("bus.busCountryNumber", busCountryNumber);
+            var list = await _collection.Find(filter).ToListAsync();
+            return list.AsReadOnly();
+        }
+
+        public async Task<IReadOnlyCollection<WorkShiftLog>> GetByRouteNumberAsync(string routeNumber)
+        {
+            var filter = Builders<WorkShiftLog>.Filter.Eq("route.routeNumber", routeNumber);
+            var list = await _collection.Find(filter).ToListAsync();
+            return list.AsReadOnly();
+        }
+
+        public async Task<IReadOnlyCollection<WorkShiftLog>> GetByStatusAsync(string status)
+        {
+            var list = await _collection
+                .Find(w => w.Status == status)
                 .ToListAsync();
-        }
-
-        public async Task<IEnumerable<WorkShiftLog>> GetByStatusAsync(string status)
-        {
-            return await _collection.Find(w => w.Status == status).ToListAsync();
-        }
-
-        public async Task<WorkShiftLog> CreateAsync(WorkShiftLog workShift)
-        {
-            await _collection.InsertOneAsync(workShift);
-            return workShift;
-        }
-
-        public async Task<bool> UpdateAsync(string id, WorkShiftLog workShift)
-        {
-            var result = await _collection.ReplaceOneAsync(w => w.Id == id, workShift);
-            return result.ModifiedCount > 0;
-        }
-
-        public async Task<bool> DeleteAsync(string id)
-        {
-            var result = await _collection.DeleteOneAsync(w => w.Id == id);
-            return result.DeletedCount > 0;
-        }
-
-        public async Task<bool> DeleteByPersonnelIdAsync(int personnelId)
-        {
-            var result = await _collection.DeleteManyAsync(w => w.PersonnelId == personnelId);
-            return result.DeletedCount > 0;
-        }
-
-        public async Task<bool> UpdateStatusAsync(string id, string status)
-        {
-            var update = Builders<WorkShiftLog>.Update.Set(w => w.Status, status);
-            var result = await _collection.UpdateOneAsync(w => w.Id == id, update);
-            return result.ModifiedCount > 0;
+            return list.AsReadOnly();
         }
 
         public async Task<double> GetTotalDistanceByPersonnelAsync(int personnelId, DateTime startDate, DateTime endDate)
         {
-            var shifts = await GetByPersonnelAndDateRangeAsync(personnelId, startDate, endDate);
-            return shifts.Sum(s => s.Route.DistanceKm);
+            var pipeline = new[]
+            {
+                new BsonDocument("$match", new BsonDocument
+                {
+                    { "personnelId", personnelId },
+                    { "shiftDate", new BsonDocument
+                        {
+                            { "$gte", startDate },
+                            { "$lte", endDate }
+                        }
+                    }
+                }),
+                new BsonDocument("$group", new BsonDocument
+                {
+                    { "_id", BsonNull.Value },
+                    { "totalDistance", new BsonDocument("$sum", "$route.distanceKm") }
+                })
+            };
+
+            var result = await _collection.Aggregate<BsonDocument>(pipeline).FirstOrDefaultAsync();
+            return result?["totalDistance"].ToDouble() ?? 0;
         }
 
         public async Task<int> GetShiftCountByPersonnelAsync(int personnelId, DateTime startDate, DateTime endDate)
         {
-            var count = await _collection.CountDocumentsAsync(
-                w => w.PersonnelId == personnelId &&
-                     w.ShiftDate >= startDate &&
-                     w.ShiftDate <= endDate
-            );
+            var count = await _collection
+                .CountDocumentsAsync(w =>
+                    w.PersonnelId == personnelId
+                    && w.ShiftDate >= startDate
+                    && w.ShiftDate <= endDate);
+
             return (int)count;
+        }
+
+        public async Task<IReadOnlyCollection<WorkShiftLog>> GetUpcomingShiftsAsync(int personnelId, int daysAhead = 7)
+        {
+            var today = DateTime.UtcNow.Date;
+            var futureDate = today.AddDays(daysAhead);
+
+            var list = await _collection
+                .Find(w => w.PersonnelId == personnelId
+                    && w.ShiftDate >= today
+                    && w.ShiftDate <= futureDate
+                    && w.Status == "Scheduled")
+                .SortBy(w => w.ShiftDate)
+                .ToListAsync();
+
+            return list.AsReadOnly();
         }
     }
 }

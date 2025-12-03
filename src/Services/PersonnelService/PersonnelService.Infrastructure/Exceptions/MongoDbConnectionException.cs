@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PersonnelService.Infrastructure.Exceptions
+﻿namespace PersonnelService.Infrastructure.Exceptions
 {
-    internal class MongoDbConnectionException
+    public class MongoDbConnectionException : Exception
     {
+        public MongoDbConnectionException(string message, Exception? inner = null)
+            : base(message, inner) { }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
-using PersonnelService.Core.DTOs;
 using PersonnelService.Domain.Common;
 using PersonnelService.Domain.Exceptions;
 using PersonnelService.Domain.ValueObjects;
