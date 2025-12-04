@@ -9,14 +9,6 @@
 		<ProjectReference Include="..\PersonnelService.Core\PersonnelService.Domain.csproj" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Folder Include="TodoDocuments\Commands\UpdateDocument\" />
-	  <Folder Include="TodoDocuments\Queries\GetDocumentById\" />
-	  <Folder Include="TodoExaminations\Commands\UpdateExamination\" />
-	  <Folder Include="TodoExaminations\Queries\GetExaminationById\" />
-	  <Folder Include="TodoWorkShifts\Commands\UpdateWorkShift\" />
-	  <Folder Include="TodoWorkShifts\Queries\GetWorkShiftById\" />
-	</ItemGroup>
-	<ItemGroup>
 	  <PackageReference Include="AutoMapper" Version="12.0.1" />
 	  <PackageReference Include="FluentValidation" Version="12.1.0" />
 	  <PackageReference Include="MediatR" Version="13.1.0" />
