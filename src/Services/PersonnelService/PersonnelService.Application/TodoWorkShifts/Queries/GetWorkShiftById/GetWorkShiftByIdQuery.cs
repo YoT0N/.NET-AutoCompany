@@ -1,12 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using PersonnelService.Application.Common.Interfaces;
+using PersonnelService.Application.Common.Mappings;
 
 namespace PersonnelService.Application.TodoWorkShifts.Queries.GetWorkShiftById
 {
-    internal class GetWorkShiftByIdQuery
+    public class GetWorkShiftByIdQuery : IQuery<WorkShiftDto>
     {
+        public string Id { get; set; } = string.Empty;
+
+        public GetWorkShiftByIdQuery(string id)
+        {
+            Id = id;
+        }
     }
 }

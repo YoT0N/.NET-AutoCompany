@@ -1,12 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using PersonnelService.Application.Common.Interfaces;
 
 namespace PersonnelService.Application.TodoDocuments.Commands.UpdateDocument
 {
-    internal class UpdateDocumentCommand
+    public class UpdateDocumentCommand : ICommand<string>
     {
+        public string Id { get; set; } = string.Empty;
+        public DateTime? IssuedOn { get; set; }
+        public DateTime? ValidUntil { get; set; }
+        public string? Category { get; set; }
+        public string? IssuedBy { get; set; }
+        public string? DocumentNumber { get; set; }
     }
 }
