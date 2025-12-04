@@ -7,10 +7,7 @@ using TechnicalService.Bll.Interfaces;
 
 namespace TechnicalService.Bll.Services;
 
-/// <summary>
-/// Сервіс для роботи з технічними оглядами автобусів
 /// Містить бізнес-логіку, валідацію та координацію транзакцій
-/// </summary>
 public class ExaminationService : IExaminationService
 {
     private readonly IUnitOfWork _unitOfWork;
@@ -89,10 +86,8 @@ public class ExaminationService : IExaminationService
         return _mapper.Map<ExaminationDto>(examination);
     }
 
-    /// <summary>
     /// Створення огляду з запчастинами - ТРАНЗАКЦІЙНА ОПЕРАЦІЯ
     /// Координує кілька операцій: створення огляду, додавання запчастин, оновлення статусу автобуса
-    /// </summary>
     public async Task<long> CreateExaminationAsync(
         CreateExaminationDto dto,
         CancellationToken cancellationToken = default)
@@ -254,7 +249,6 @@ public class ExaminationService : IExaminationService
         }
 
         // БІЗНЕС-ПРАВИЛО: можна видалити тільки огляди старше 30 днів
-        // (приклад бізнес-логіки)
         if (examination.ExaminationDate > DateTime.UtcNow.AddDays(-30))
         {
             throw new BusinessConflictException(

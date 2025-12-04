@@ -4,7 +4,6 @@ namespace TechnicalService.Dal.Interfaces;
 
 public interface IUnitOfWork : IDisposable
 {
-    // Репозиторії
     IBusRepository Buses { get; }
     IExaminationRepository Examinations { get; }
     IMaintenanceRepository Maintenances { get; }

@@ -166,7 +166,6 @@ namespace RoutingService.Bll.Services
                     $"Stop {dto.StopId} is already assigned to route {dto.RouteId}");
             }
 
-            // Check if StopOrder is already taken
             var orderExists = await _unitOfWork.RouteStopAssignments
                 .Query()
                 .AnyAsync(rsa => rsa.RouteId == dto.RouteId && rsa.StopOrder == dto.StopOrder);

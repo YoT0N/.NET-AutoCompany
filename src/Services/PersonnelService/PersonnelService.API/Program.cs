@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using PersonnelService.API.Middlewares;
 using PersonnelService.Application;
 using PersonnelService.Infrastructure;
@@ -7,31 +10,22 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
 builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.PropertyNamingPolicy = null;
-    });
+    .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new()
-    {
-        Title = "Personnel Service API",
-        Version = "v1",
-        Description = "Clean Architecture ASP.NET Core Web API ç MongoDB"
-    });
+    options.SwaggerDoc("v1", new() { Title = "Personnel Service API", Version = "v1" });
 });
 
-// Register Application Layer (MediatR, AutoMapper, FluentValidation, Behaviors)
+// Configure Health Checks
+builder.Services.AddHealthChecks();
+
+// Add Application Services
 builder.Services.AddApplication();
 
-// Register Infrastructure Layer (MongoDB, Repositories, Seeders)
+// Add Infrastructure Services
 builder.Services.AddInfrastructure(builder.Configuration);
-
-// Health Checks
-builder.Services.AddHealthChecks()
-    .AddCheck<MongoDbHealthCheck>("mongodb");
 
 // Configure CORS
 builder.Services.AddCors(options =>
@@ -46,7 +40,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Seed initial data
+// Seed database
 using (var scope = app.Services.CreateScope())
 {
     var seedManager = scope.ServiceProvider.GetRequiredService<SeedManager>();
@@ -64,16 +58,11 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-// Global Exception Middleware
 app.UseMiddleware<GlobalExceptionMiddleware>();
-
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthorization();
-
-// Health check endpoint
 app.MapHealthChecks("/health");
-
 app.MapControllers();
 
 app.Run();

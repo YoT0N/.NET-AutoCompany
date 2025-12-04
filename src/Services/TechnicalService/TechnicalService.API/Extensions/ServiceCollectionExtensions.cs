@@ -21,22 +21,18 @@ public static class ServiceCollectionExtensions
             new DapperContext(configuration));
 
 
-        // Реєстрація репозиторіїв
         services.AddScoped<IBusRepository, BusRepositoryAdoNet>(); // Чистий ADO.NET
         services.AddScoped<IExaminationRepository, ExaminationRepository>(); // Dapper
         services.AddScoped<IMaintenanceRepository, MaintenanceRepository>(); // Dapper
         services.AddScoped<IRepairPartRepository, RepairPartRepository>(); // Dapper
 
-        // Unit of Work
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-        // Business Logic сервіси
         services.AddScoped<IBusService, BusService>();
         services.AddScoped<IExaminationService, ExaminationService>();
         services.AddScoped<IMaintenanceService, MaintenanceService>();
         services.AddScoped<IRepairPartService, RepairPartService>();
 
-        // AutoMapper
         services.AddAutoMapper(typeof(BusProfile).Assembly);
 
         return services;

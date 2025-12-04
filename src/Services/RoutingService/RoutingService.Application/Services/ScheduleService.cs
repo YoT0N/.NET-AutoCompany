@@ -63,12 +63,10 @@ namespace RoutingService.Bll.Services
 
         public async Task<PagedResultDto<ScheduleWithRouteDto>> GetSchedulesPagedAsync(ScheduleFilterParameters parameters)
         {
-            // Start with base query including related data
             IQueryable<Schedule> query = _unitOfWork.Schedules
                 .Query()
                 .Include(s => s.Route);
 
-            // Apply filters
             if (parameters.RouteId.HasValue)
             {
                 query = query.Where(s => s.RouteId == parameters.RouteId.Value);
@@ -84,7 +82,6 @@ namespace RoutingService.Bll.Services
                 query = query.Where(s => s.DepartureTime <= parameters.EndTime.Value);
             }
 
-            // Apply sorting
             query = parameters.SortBy?.ToLower() switch
             {
                 "route" => parameters.SortDirection.ToLower() == "desc"
@@ -101,7 +98,6 @@ namespace RoutingService.Bll.Services
 
             var totalCount = await query.CountAsync();
 
-            // Apply pagination
             var schedules = await query
                 .Skip(parameters.Skip)
                 .Take(parameters.PageSize)

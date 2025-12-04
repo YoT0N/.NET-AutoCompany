@@ -5,10 +5,6 @@ using TechnicalService.Dal.Data;
 
 namespace TechnicalService.Dal.Implementations.Dapper;
 
-/// <summary>
-/// Репозиторій запчастин для ремонту (ADO.NET + Dapper)
-/// Демонструє роботу з Dapper для простих CRUD операцій та бізнес-запитів
-/// </summary>
 public class RepairPartRepository : IRepairPartRepository
 {
     private readonly DapperContext _context;
@@ -132,11 +128,9 @@ public class RepairPartRepository : IRepairPartRepository
         return await connection.ExecuteAsync(command);
     }
 
-    // ========== IRepairPartRepository специфічні методи ==========
+    // IRepairPartRepository специфічні методи 
 
-    /// <summary>
     /// Отримати запчастини з низьким запасом на складі
-    /// </summary>
     public async Task<IEnumerable<RepairPart>> GetLowStockPartsAsync(
         int threshold,
         CancellationToken cancellationToken = default)
@@ -159,10 +153,8 @@ public class RepairPartRepository : IRepairPartRepository
         return await connection.QueryAsync<RepairPart>(command);
     }
 
-    /// <summary>
     /// Оновити кількість запчастин на складі (збільшити/зменшити)
     /// Використовується при постачанні або використанні запчастин
-    /// </summary>
     public async Task<int> UpdateStockQuantityAsync(
         int partId,
         int quantity,
@@ -176,7 +168,7 @@ public class RepairPartRepository : IRepairPartRepository
                 UpdatedAt = CURRENT_TIMESTAMP
             WHERE PartId = @PartId 
               AND IsDeleted = @IsDeleted
-              AND (StockQuantity + @Quantity) >= 0";  // ← Запобігаємо від'ємній кількості
+              AND (StockQuantity + @Quantity) >= 0";  // Запобігаємо від'ємній кількості
 
         var command = new CommandDefinition(
             sql,
@@ -201,9 +193,7 @@ public class RepairPartRepository : IRepairPartRepository
         return affectedRows;
     }
 
-    /// <summary>
     /// Знайти запчастину за артикулом
-    /// </summary>
     public async Task<RepairPart?> GetByPartNumberAsync(
         string partNumber,
         CancellationToken cancellationToken = default)

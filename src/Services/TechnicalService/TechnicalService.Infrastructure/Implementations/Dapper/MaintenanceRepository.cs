@@ -6,10 +6,8 @@ using TechnicalService.Dal.Data;
 
 namespace TechnicalService.Dal.Implementations.Dapper;
 
-/// <summary>
 /// Репозиторій історії обслуговування автобусів (ADO.NET + Dapper)
 /// Демонструє роботу з Dapper для читань, multi-mapping та збереженими процедурами
-/// </summary>
 public class MaintenanceRepository : IMaintenanceRepository
 {
     private readonly DapperContext _context;
@@ -39,7 +37,6 @@ public class MaintenanceRepository : IMaintenanceRepository
             sql,
             cancellationToken: cancellationToken);
 
-        // Multi-mapping: BusMaintenanceHistory + Bus
         var result = await connection.QueryAsync<BusMaintenanceHistory, Bus, BusMaintenanceHistory>(
             command,
             (maintenance, bus) =>
@@ -153,10 +150,8 @@ public class MaintenanceRepository : IMaintenanceRepository
 
     // ========== IMaintenanceRepository специфічні методи ==========
 
-    /// <summary>
     /// Отримати історію обслуговування для конкретного автобуса
     /// Використовує збережену процедуру
-    /// </summary>
     public async Task<IEnumerable<BusMaintenanceHistory>> GetMaintenanceByBusAsync(
         string countryNumber,
         CancellationToken cancellationToken = default)
@@ -174,10 +169,8 @@ public class MaintenanceRepository : IMaintenanceRepository
         return await connection.QueryAsync<BusMaintenanceHistory>(command);
     }
 
-    /// <summary>
     /// Розрахувати загальну вартість обслуговування для автобуса
     /// Використовує збережену процедуру з OUT параметром
-    /// </summary>
     public async Task<decimal> GetTotalMaintenanceCostAsync(
         string countryNumber,
         CancellationToken cancellationToken = default)
@@ -199,9 +192,7 @@ public class MaintenanceRepository : IMaintenanceRepository
         return parameters.Get<decimal>("p_TotalCost");
     }
 
-    /// <summary>
     /// Отримати майбутні заплановані обслуговування
-    /// </summary>
     public async Task<IEnumerable<BusMaintenanceHistory>> GetUpcomingMaintenanceAsync(
         DateTime fromDate,
         CancellationToken cancellationToken = default)

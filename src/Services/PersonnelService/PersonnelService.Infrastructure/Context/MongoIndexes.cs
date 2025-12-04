@@ -12,9 +12,7 @@ namespace PersonnelService.Infrastructure.Context
             var examinations = database.GetCollection<PhysicalExamination>("Examinations");
             var workShifts = database.GetCollection<WorkShiftLog>("WorkShifts");
 
-            // ---------------------------
             // Personnel indexes
-            // ---------------------------
 
             // Унікальний індекс по PersonnelId
             var personnelIdIndex = Builders<Personnel>.IndexKeys.Ascending(p => p.PersonnelId);
@@ -36,9 +34,7 @@ namespace PersonnelService.Infrastructure.Context
             var statusIndex = Builders<Personnel>.IndexKeys.Ascending(p => p.Status);
             personnel.Indexes.CreateOne(new CreateIndexModel<Personnel>(statusIndex));
 
-            // ---------------------------
             // PersonnelDocument indexes
-            // ---------------------------
 
             // Compound index для PersonnelId та DocType
             var docCompoundIndex = Builders<PersonnelDocument>.IndexKeys
@@ -56,9 +52,7 @@ namespace PersonnelService.Infrastructure.Context
                 .Ascending(d => d.ValidUntil);
             documents.Indexes.CreateOne(new CreateIndexModel<PersonnelDocument>(expiredDocsIndex));
 
-            // ---------------------------
             // PhysicalExamination indexes
-            // ---------------------------
 
             // Compound index для PersonnelId та ExamDate
             var examCompoundIndex = Builders<PhysicalExamination>.IndexKeys
@@ -74,9 +68,7 @@ namespace PersonnelService.Infrastructure.Context
             var doctorIndex = Builders<PhysicalExamination>.IndexKeys.Ascending(e => e.DoctorName);
             examinations.Indexes.CreateOne(new CreateIndexModel<PhysicalExamination>(doctorIndex));
 
-            // ---------------------------
             // WorkShiftLog indexes
-            // ---------------------------
 
             // Compound index для PersonnelId та ShiftDate
             var shiftCompoundIndex = Builders<WorkShiftLog>.IndexKeys

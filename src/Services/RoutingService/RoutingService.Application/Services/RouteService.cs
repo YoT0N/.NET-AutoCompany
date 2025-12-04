@@ -70,10 +70,9 @@ namespace RoutingService.Bll.Services
                 _ => query.OrderBy(r => r.RouteId)
             };
 
-            // Get total count before pagination
             var totalCount = await query.CountAsync();
 
-            // Apply pagination
+            // pagination
             var routes = await query
                 .Skip(parameters.Skip)
                 .Take(parameters.PageSize)

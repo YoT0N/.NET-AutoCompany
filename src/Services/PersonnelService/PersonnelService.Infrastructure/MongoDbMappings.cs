@@ -11,7 +11,7 @@ namespace PersonnelService.Infrastructure
     {
         public static void RegisterClassMaps()
         {
-            // ----------------- BaseEntity -----------------
+            // BaseEntity 
             if (!BsonClassMap.IsClassMapRegistered(typeof(BaseEntity)))
             {
                 BsonClassMap.RegisterClassMap<BaseEntity>(cm =>
@@ -24,7 +24,7 @@ namespace PersonnelService.Infrastructure
                 });
             }
 
-            // ----------------- Personnel -----------------
+            // Personnel
             if (!BsonClassMap.IsClassMapRegistered(typeof(Personnel)))
             {
                 BsonClassMap.RegisterClassMap<Personnel>(cm =>
@@ -34,7 +34,7 @@ namespace PersonnelService.Infrastructure
                 });
             }
 
-            // ----------------- PersonnelDocument -----------------
+            // PersonnelDocument
             if (!BsonClassMap.IsClassMapRegistered(typeof(PersonnelDocument)))
             {
                 BsonClassMap.RegisterClassMap<PersonnelDocument>(cm =>
@@ -44,7 +44,7 @@ namespace PersonnelService.Infrastructure
                 });
             }
 
-            // ----------------- PhysicalExamination -----------------
+            // PhysicalExamination
             if (!BsonClassMap.IsClassMapRegistered(typeof(PhysicalExamination)))
             {
                 BsonClassMap.RegisterClassMap<PhysicalExamination>(cm =>
@@ -54,7 +54,7 @@ namespace PersonnelService.Infrastructure
                 });
             }
 
-            // ----------------- WorkShiftLog -----------------
+            // WorkShiftLog
             if (!BsonClassMap.IsClassMapRegistered(typeof(WorkShiftLog)))
             {
                 BsonClassMap.RegisterClassMap<WorkShiftLog>(cm =>

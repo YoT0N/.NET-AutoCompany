@@ -103,7 +103,6 @@ namespace RoutingService.Bll.Services
 
         public async Task<PagedResultDto<TripDetailsDto>> GetTripsPagedAsync(TripFilterParameters parameters)
         {
-            // Start with base query including related data
             IQueryable<Trip> query = _unitOfWork.Trips
                 .Query()
                 .Include(t => t.RouteSheet)

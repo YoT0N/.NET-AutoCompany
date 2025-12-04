@@ -1,13 +1,10 @@
 ﻿namespace TechnicalService.Bll.DTOs.Examination;
 
-/// <summary>
-/// DTO для створення технічного огляду
-/// </summary>
 public class CreateExaminationDto
 {
     public string BusCountryNumber { get; set; } = string.Empty;
     public DateTime ExaminationDate { get; set; }
-    public string ExaminationResult { get; set; } = string.Empty; // "Passed", "Failed"
+    public string ExaminationResult { get; set; } = string.Empty;
     public bool SentForRepair { get; set; }
     public decimal RepairPrice { get; set; }
     public string? MechanicName { get; set; }
@@ -17,9 +14,7 @@ public class CreateExaminationDto
     public List<CreateRepairPartDto>? RepairParts { get; set; }
 }
 
-/// <summary>
-/// DTO для оновлення технічного огляду
-/// </summary>
+
 public class UpdateExaminationDto
 {
     public string BusCountryNumber { get; set; } = string.Empty;
@@ -31,9 +26,7 @@ public class UpdateExaminationDto
     public string? Notes { get; set; }
 }
 
-/// <summary>
 /// DTO для відображення технічного огляду
-/// </summary>
 public class ExaminationDto
 {
     public long ExaminationId { get; set; }
@@ -50,18 +43,14 @@ public class ExaminationDto
     public List<RepairPartDto>? RepairParts { get; set; }
 }
 
-/// <summary>
 /// DTO для запчастини при створенні огляду
-/// </summary>
 public class CreateRepairPartDto
 {
     public int PartId { get; set; }
     public int Quantity { get; set; }
 }
 
-/// <summary>
 /// DTO для відображення запчастини
-/// </summary>
 public class RepairPartDto
 {
     public int PartId { get; set; }

@@ -97,10 +97,8 @@ namespace RoutingService.API.Extensions
                 });
             }
 
-            // HTTPS Redirection
             app.UseHttpsRedirection();
 
-            // Response Compression
             app.UseResponseCompression();
 
             // Serilog request logging
@@ -118,7 +116,6 @@ namespace RoutingService.API.Extensions
                     diagnosticContext.Set("RemoteIpAddress",
                         httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");
 
-                    // Add correlation ID if present
                     if (httpContext.Request.Headers.TryGetValue("X-Correlation-ID",
                         out var correlationId))
                     {
@@ -144,7 +141,6 @@ namespace RoutingService.API.Extensions
 
             app.UseRouting();
 
-            // CORS - use appropriate policy based on environment
             var corsPolicy = environment.IsDevelopment() ? "AllowAll" : "Production";
             app.UseCors(corsPolicy);
 

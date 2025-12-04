@@ -18,9 +18,6 @@ public class BusController : ControllerBase
         _logger = logger;
     }
 
-    /// <summary>
-    /// Отримати всі автобуси
-    /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<BusDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<BusDto>>> GetAllBuses(CancellationToken cancellationToken)
@@ -29,9 +26,6 @@ public class BusController : ControllerBase
         return Ok(buses);
     }
 
-    /// <summary>
-    /// Отримати автобус за номером
-    /// </summary>
     [HttpGet("{countryNumber}")]
     [ProducesResponseType(typeof(BusDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -43,9 +37,6 @@ public class BusController : ControllerBase
         return Ok(bus);
     }
 
-    /// <summary>
-    /// Створити новий автобус
-    /// </summary>
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -62,9 +53,6 @@ public class BusController : ControllerBase
             null);
     }
 
-    /// <summary>
-    /// Оновити автобус
-    /// </summary>
     [HttpPut("{countryNumber}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -78,9 +66,6 @@ public class BusController : ControllerBase
         return NoContent();
     }
 
-    /// <summary>
-    /// Видалити автобус (м'яке видалення)
-    /// </summary>
     [HttpDelete("{countryNumber}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -93,9 +78,6 @@ public class BusController : ControllerBase
         return NoContent();
     }
 
-    /// <summary>
-    /// Отримати активні автобуси
-    /// </summary>
     [HttpGet("active")]
     [ProducesResponseType(typeof(IEnumerable<BusDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<BusDto>>> GetActiveBuses(CancellationToken cancellationToken)
@@ -104,9 +86,6 @@ public class BusController : ControllerBase
         return Ok(buses);
     }
 
-    /// <summary>
-    /// Оновити статус автобуса
-    /// </summary>
     [HttpPatch("{countryNumber}/status")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -120,9 +99,6 @@ public class BusController : ControllerBase
         return NoContent();
     }
 
-    /// <summary>
-    /// Отримати загальний пробіг автобуса
-    /// </summary>
     [HttpGet("{countryNumber}/mileage")]
     [ProducesResponseType(typeof(decimal), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]

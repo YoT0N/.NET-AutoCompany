@@ -19,7 +19,6 @@ namespace RoutingService.API.Extensions
         {
             services.AddAutoMapper(typeof(MappingProfile));
 
-            // Register Application Services (BLL)
             services.AddScoped<IRouteService, RouteService>();
             services.AddScoped<IRouteStopService, RouteStopService>();
             services.AddScoped<IScheduleService, ScheduleService>();
@@ -52,11 +51,9 @@ namespace RoutingService.API.Extensions
                     .EnableDetailedErrors(true);
             });
 
-            // Register Unit of Work and Generic Repositories
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
-            // Register Specific Repositories
             services.AddScoped<IRouteRepository, RouteRepository>();
             services.AddScoped<IRouteSheetRepository, RouteSheetRepository>();
             services.AddScoped<IScheduleRepository, ScheduleRepository>();
@@ -75,11 +72,10 @@ namespace RoutingService.API.Extensions
             IConfiguration configuration,
             IWebHostEnvironment environment)
         {
-            // Add Controllers with custom configuration
+            // Controllers with custom configuration
             services.AddControllers()
                 .ConfigureApiBehaviorOptions(options =>
                 {
-                    // Keep automatic 400 responses but customize them
                     options.SuppressModelStateInvalidFilter = false;
                 });
 
@@ -88,10 +84,8 @@ namespace RoutingService.API.Extensions
                 config.DisableDataAnnotationsValidation = false;
             });
 
-            // Register all validators from the API assembly
             services.AddValidatorsFromAssemblyContaining<Program>();
 
-            // Add API Explorer for Swagger
             services.AddEndpointsApiExplorer();
 
             services.AddSwaggerGen(options =>

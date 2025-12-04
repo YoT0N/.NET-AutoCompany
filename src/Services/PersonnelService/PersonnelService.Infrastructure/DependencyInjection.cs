@@ -13,17 +13,16 @@ namespace PersonnelService.Infrastructure
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            // Register MongoDbContext
+            // MongoDbContext
             services.AddSingleton<MongoDbContext>(sp =>
             {
                 var config = sp.GetRequiredService<IConfiguration>();
                 return new MongoDbContext(config);
             });
 
-            // Register MongoDB mappings
+            // MongoDB mappings
             MongoDbMappings.RegisterClassMaps();
 
-            // Register Repositories
             services.AddScoped<IPersonnelRepository, PersonnelRepository>();
             services.AddScoped<IDocumentRepository, DocumentRepository>();
             services.AddScoped<IExaminationRepository, ExaminationRepository>();
@@ -42,7 +41,6 @@ namespace PersonnelService.Infrastructure
 
             services.AddSingleton<SeedManager>();
 
-            // Register Health Checks
             services.AddHealthChecks()
                 .AddCheck<MongoDbHealthCheck>("mongodb");
 
