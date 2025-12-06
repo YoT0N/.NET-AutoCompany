@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
@@ -53,6 +54,10 @@ public static class Extensions
                         options.SetDbStatementForText = true;
                         options.RecordException = true;
                     });
+
+                // Додати MongoDB instrumentation якщо доступно
+                // MongoDB Driver автоматично інтегрується з Activity API
+                tracing.AddSource("MongoDB.Driver.Core.Extensions.DiagnosticSources");
             });
 
         builder.AddOpenTelemetryExporters();

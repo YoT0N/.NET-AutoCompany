@@ -12,5 +12,6 @@
 	<ItemGroup>
 		<ProjectReference Include="..\PersonnelService.Application\PersonnelService.Application.csproj" />
 		<ProjectReference Include="..\PersonnelService.Infrastructure\PersonnelService.Infrastructure.csproj" />
+		<ProjectReference Include="..\..\..\..\ServiceDefaults\ServiceDefaults.csproj" />
 	</ItemGroup>
 </Project>

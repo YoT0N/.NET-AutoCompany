@@ -5,8 +5,12 @@ using PersonnelService.API.Middlewares;
 using PersonnelService.Application;
 using PersonnelService.Infrastructure;
 using PersonnelService.Infrastructure.Context;
+using ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Додати ServiceDefaults на початку конфігурації
+builder.AddServiceDefaults();
 
 // Add services to the container
 builder.Services.AddControllers()
@@ -24,7 +28,7 @@ builder.Services.AddHealthChecks();
 // Add Application Services
 builder.Services.AddApplication();
 
-// Add Infrastructure Services
+// Add Infrastructure Services - використовуємо connection string від Aspire
 builder.Services.AddInfrastructure(builder.Configuration);
 
 // Configure CORS
@@ -58,11 +62,16 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+// Додати CorrelationId middleware
+app.UseCorrelationId();
+
 app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthorization();
-app.MapHealthChecks("/health");
+
+// Додати default endpoints для health checks
+app.MapDefaultEndpoints();
 app.MapControllers();
 
 app.Run();

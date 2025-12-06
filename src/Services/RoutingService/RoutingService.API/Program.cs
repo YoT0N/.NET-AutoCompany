@@ -12,51 +12,29 @@ using RoutingService.Dal.Repositories;
 using RoutingService.Domain.Repositories;
 using Serilog;
 using Serilog.Events;
+using ServiceDefaults;
 
-Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Information()
-    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
-    .Enrich.FromLogContext()
-    .Enrich.WithProperty("Application", "RoutingService")
-    .Enrich.WithProperty("Environment", Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production")
-    .WriteTo.Console(
-        outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
-    .WriteTo.File(
-        "logs/routing-service-.txt",
-        rollingInterval: RollingInterval.Day,
-        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}",
-        retainedFileCountLimit: 30)
-    .CreateLogger();
+// Видалимо власну конфігурацію Serilog, ServiceDefaults це зробить
+var builder = WebApplication.CreateBuilder(args);
 
-try
-{
-    Log.Information("Starting RoutingService API");
+// Додати ServiceDefaults на початку
+builder.AddServiceDefaults();
 
-    var builder = WebApplication.CreateBuilder(args);
+// Add services using extension methods
+builder.Services.AddApplicationServices();
+builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddApiServices(builder.Configuration, builder.Environment);
 
-    builder.Host.UseSerilog();
+var app = builder.Build();
 
-    // Add services using extension methods
-    builder.Services.AddApplicationServices();
-    builder.Services.AddInfrastructureServices(builder.Configuration);
-    builder.Services.AddApiServices(builder.Configuration, builder.Environment);
+await app.ApplyMigrationsAndSeedAsync();
 
-    var app = builder.Build();
+// Додати CorrelationId middleware
+app.UseCorrelationId();
 
-    await app.ApplyMigrationsAndSeedAsync();
+app.ConfigureMiddleware();
 
-    app.ConfigureMiddleware();
+// Додати default endpoints
+app.MapDefaultEndpoints();
 
-    Log.Information("RoutingService API started successfully");
-    await app.RunAsync();
-}
-catch (Exception ex)
-{
-    Log.Fatal(ex, "Application terminated unexpectedly");
-    throw;
-}
-finally
-{
-    Log.CloseAndFlush();
-}
+await app.RunAsync();

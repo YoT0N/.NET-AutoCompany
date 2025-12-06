@@ -1,56 +1,27 @@
-using FluentValidation;
-using FluentValidation.AspNetCore;
-using Microsoft.OpenApi.Models;
-using Serilog;
 using TechnicalService.Api.Extensions;
 using TechnicalService.Api.Middleware;
-using TechnicalService.Bll.Validators;
+using ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Serilog
-Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
-    .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .WriteTo.File("logs/technical-service-.txt", rollingInterval: RollingInterval.Day)
-    .CreateLogger();
+// Додати ServiceDefaults на початку
+builder.AddServiceDefaults();
 
-builder.Host.UseSerilog();
-
-// Додавання сервісів
+// Add services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-// Swagger/OpenAPI
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "Technical Service API",
-        Version = "v1",
-        Description = "API для управління технічним обслуговуванням автобусів"
-    });
-
-    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    if (File.Exists(xmlPath))
-    {
-        c.IncludeXmlComments(xmlPath);
-    }
-});
-
-// FluentValidation
-builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddValidatorsFromAssemblyContaining<TechnicalService.Bll.Validators.CreateBusDtoValidator>();
-
-// Додавання Application Services (репозиторії, сервіси, UoW, AutoMapper)
+// Add Application Services з конфігурацією
 builder.Services.AddApplicationServices(builder.Configuration);
 
-// CORS (за потреби)
+// Configure Health Checks
+builder.Services.AddHealthChecks();
+
+// Configure CORS
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(policy =>
+    options.AddPolicy("AllowAll", policy =>
     {
         policy.AllowAnyOrigin()
               .AllowAnyMethod()
@@ -60,33 +31,23 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Middleware pipeline
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Technical Service API v1");
-    });
+    app.UseSwaggerUI();
 }
+
+// Додати CorrelationId middleware
+app.UseCorrelationId();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
-
 app.UseHttpsRedirection();
-app.UseCors();
+app.UseCors("AllowAll");
 app.UseAuthorization();
+
+// Додати default endpoints
+app.MapDefaultEndpoints();
 app.MapControllers();
 
-try
-{
-    Log.Information("Запуск Technical Service API");
-    app.Run();
-}
-catch (Exception ex)
-{
-    Log.Fatal(ex, "Помилка запуску додатку");
-}
-finally
-{
-    Log.CloseAndFlush();
-}
+app.Run();

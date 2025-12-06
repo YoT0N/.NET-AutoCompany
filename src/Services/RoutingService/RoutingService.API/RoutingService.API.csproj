@@ -35,6 +35,7 @@
   <ItemGroup>
     <ProjectReference Include="..\RoutingService.Application\RoutingService.Bll.csproj" />
     <ProjectReference Include="..\RoutingService.Infrastructure\RoutingService.Dal.csproj" />
+	<ProjectReference Include="..\..\..\..\ServiceDefaults\ServiceDefaults.csproj" />
   </ItemGroup>
 
 </Project>

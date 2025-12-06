@@ -18,6 +18,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\TechnicalService.Application\TechnicalService.Bll.csproj" />
 		<ProjectReference Include="..\TechnicalService.Infrastructure\TechnicalService.Dal.csproj" />
+		    <ProjectReference Include="..\..\..\..\ServiceDefaults\ServiceDefaults.csproj" />
 	</ItemGroup>
 
 </Project>
