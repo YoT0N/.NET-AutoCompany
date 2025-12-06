@@ -1,32 +1,55 @@
 using Aspire.Hosting;
-using Aspire.Hosting.MySql;
-using Aspire.Hosting.MongoDB;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-var mysqlTechnicalServer = builder.AddMySql("mysql-technical")
-    .WithDataVolume();
+// === DATABASES ===
+var mysqlTechnical = builder.AddMySql("mysql-technical")
+    .WithDataVolume()
+    .WithLifetime(ContainerLifetime.Persistent);
 
-var transportServiceDb = mysqlTechnicalServer.AddDatabase("transportservicedb");
+var transportServiceDb = mysqlTechnical.AddDatabase("transportservicedb");
 
-var mysqlRoutingServer = builder.AddMySql("mysql-routing")
-    .WithDataVolume();
+var mysqlRouting = builder.AddMySql("mysql-routing")
+    .WithDataVolume()
+    .WithLifetime(ContainerLifetime.Persistent);
 
-var routesDb = mysqlRoutingServer.AddDatabase("routesdb");
+var routesDb = mysqlRouting.AddDatabase("routesdb");
 
-var mongoPersonnelServer = builder.AddMongoDB("mongo-personnel")
-    .WithDataVolume();
+var mongoPersonnel = builder.AddMongoDB("mongo-personnel")
+    .WithDataVolume()
+    .WithLifetime(ContainerLifetime.Persistent);
 
-var personnelDb = mongoPersonnelServer.AddDatabase("personneldb");
+var personnelDb = mongoPersonnel.AddDatabase("personneldb");
 
-
+// === MICROSERVICES ===
 var technicalApi = builder.AddProject<Projects.TechnicalService_Api>("technicalservice-api")
-    .WithReference(transportServiceDb);
+    .WithReference(transportServiceDb)
+    .WaitFor(transportServiceDb);
 
 var routingApi = builder.AddProject<Projects.RoutingService_API>("routing-api")
-    .WithReference(routesDb);
+    .WithReference(routesDb)
+    .WaitFor(routesDb);
 
 var personnelApi = builder.AddProject<Projects.PersonnelService_API>("personnel-api")
-    .WithReference(personnelDb);
+    .WithReference(personnelDb)
+    .WaitFor(personnelDb);
+
+// === AGGREGATOR SERVICE ===
+var aggregator = builder.AddProject<Projects.AggregatorService>("aggregator")
+    .WithReference(technicalApi)
+    .WithReference(routingApi)
+    .WithReference(personnelApi)
+    .WaitFor(technicalApi)
+    .WaitFor(routingApi)
+    .WaitFor(personnelApi);
+
+// === API GATEWAY ===
+var gateway = builder.AddProject<Projects.ApiGateway>("gateway")
+    .WithHttpEndpoint(port: 5000, name: "http")
+    .WithReference(technicalApi)
+    .WithReference(routingApi)
+    .WithReference(personnelApi)
+    .WithReference(aggregator)
+    .WaitFor(aggregator);
 
 builder.Build().Run();

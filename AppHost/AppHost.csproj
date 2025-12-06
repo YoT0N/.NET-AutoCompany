@@ -17,6 +17,8 @@
   </ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\AggregatorService\AggregatorService.csproj" />
+		<ProjectReference Include="..\ApiGateway\ApiGateway.csproj" />
 		<ProjectReference Include="..\src\Services\TechnicalService\TechnicalService.Api\TechnicalService.Api.csproj" />
 		<ProjectReference Include="..\src\Services\PersonnelService\PersonnelService.API\PersonnelService.API.csproj" />
 		<ProjectReference Include="..\src\Services\RoutingService\RoutingService.API\RoutingService.API.csproj" />
