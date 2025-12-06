@@ -21,6 +21,9 @@ public static class Extensions
         builder.AddDefaultHealthChecks();
         builder.ConfigureSerilog();
 
+        // Реєструємо DelegatingHandler для propagation CorrelationId
+        builder.Services.AddTransient<CorrelationIdDelegatingHandler>();
+
         return builder;
     }
 
@@ -55,8 +58,7 @@ public static class Extensions
                         options.RecordException = true;
                     });
 
-                // Додати MongoDB instrumentation якщо доступно
-                // MongoDB Driver автоматично інтегрується з Activity API
+                // MongoDB instrumentation
                 tracing.AddSource("MongoDB.Driver.Core.Extensions.DiagnosticSources");
             });
 
@@ -100,8 +102,14 @@ public static class Extensions
 
     public static IHostApplicationBuilder ConfigureSerilog(this IHostApplicationBuilder builder)
     {
+        var logLevel = builder.Environment.IsDevelopment()
+            ? Serilog.Events.LogEventLevel.Debug
+            : Serilog.Events.LogEventLevel.Information;
+
         Log.Logger = new LoggerConfiguration()
-            .ReadFrom.Configuration(builder.Configuration)
+            .MinimumLevel.Is(logLevel)
+            .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
+            .MinimumLevel.Override("Microsoft.AspNetCore", Serilog.Events.LogEventLevel.Warning)
             .Enrich.FromLogContext()
             .Enrich.WithProperty("ApplicationName", builder.Environment.ApplicationName)
             .Enrich.WithProperty("Environment", builder.Environment.EnvironmentName)

@@ -1,6 +1,5 @@
 using AggregatorService.Clients;
 using AggregatorService.Services;
-using Projects;
 using ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,24 +8,27 @@ builder.AddServiceDefaults();
 
 builder.Services.AddHttpContextAccessor();
 
-// Register Typed HttpClients with Service Discovery
+// Register Typed HttpClients with Service Discovery and CorrelationId propagation
 builder.Services.AddHttpClient<TechnicalServiceClient>(client =>
 {
     client.BaseAddress = new Uri("http://technicalservice-api");
 })
-.AddStandardResilienceHandler();
+.AddStandardResilienceHandler()
+.AddHttpMessageHandler<CorrelationIdDelegatingHandler>();
 
 builder.Services.AddHttpClient<RoutingServiceClient>(client =>
 {
     client.BaseAddress = new Uri("http://routing-api");
 })
-.AddStandardResilienceHandler();
+.AddStandardResilienceHandler()
+.AddHttpMessageHandler<CorrelationIdDelegatingHandler>();
 
 builder.Services.AddHttpClient<PersonnelServiceClient>(client =>
 {
     client.BaseAddress = new Uri("http://personnel-api");
 })
-.AddStandardResilienceHandler();
+.AddStandardResilienceHandler()
+.AddHttpMessageHandler<CorrelationIdDelegatingHandler>();
 
 // Register Aggregator Service
 builder.Services.AddScoped<IAggregatorService, AggregatorService.Services.AggregatorService>();

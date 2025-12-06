@@ -4,21 +4,21 @@ using ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Додати ServiceDefaults на початку
+// Додаємо ServiceDefaults
 builder.AddServiceDefaults();
 
-// Add services
+// Додаємо HttpContextAccessor
+builder.Services.AddHttpContextAccessor();
+
+// Реєстрація сервісів
+builder.Services.AddApplicationServices(builder.Configuration);
+
+// Додаємо контролери
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add Application Services з конфігурацією
-builder.Services.AddApplicationServices(builder.Configuration);
-
-// Configure Health Checks
-builder.Services.AddHealthChecks();
-
-// Configure CORS
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -31,23 +31,24 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// Додати CorrelationId middleware
+// Middleware для обробки винятків
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+// CorrelationId middleware
 app.UseCorrelationId();
 
-app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthorization();
-
-// Додати default endpoints
-app.MapDefaultEndpoints();
 app.MapControllers();
+
+// Мапимо health check endpoints
+app.MapDefaultEndpoints();
 
 app.Run();

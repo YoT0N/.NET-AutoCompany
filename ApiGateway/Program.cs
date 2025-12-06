@@ -11,6 +11,7 @@ builder.Services.AddReverseProxy()
 
 var app = builder.Build();
 
+// CorrelationId middleware - має бути ПЕРЕД MapReverseProxy
 app.UseCorrelationId();
 
 app.MapReverseProxy();
