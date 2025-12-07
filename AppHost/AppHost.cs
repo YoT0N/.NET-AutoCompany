@@ -42,7 +42,6 @@ var aggregator = builder.AddProject<Projects.AggregatorService>("aggregator")
     .WaitFor(personnelApi);
 
 var gateway = builder.AddProject<Projects.ApiGateway>("gateway")
-    .WithHttpEndpoint(port: 5000, name: "gateway-http")
     .WithReference(technicalApi)
     .WithReference(routingApi)
     .WithReference(personnelApi)
