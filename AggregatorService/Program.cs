@@ -9,26 +9,27 @@ builder.AddServiceDefaults();
 builder.Services.AddHttpContextAccessor();
 
 // Register Typed HttpClients with Service Discovery and CorrelationId propagation
+// ÂÀÆËÈÂÎ: AddHttpMessageHandler ìàº áóòè ÄÎ AddStandardResilienceHandler
 builder.Services.AddHttpClient<TechnicalServiceClient>(client =>
 {
     client.BaseAddress = new Uri("http://technicalservice-api");
 })
-.AddStandardResilienceHandler()
-.AddHttpMessageHandler<CorrelationIdDelegatingHandler>();
+.AddHttpMessageHandler<CorrelationIdDelegatingHandler>()
+.AddStandardResilienceHandler();
 
 builder.Services.AddHttpClient<RoutingServiceClient>(client =>
 {
     client.BaseAddress = new Uri("http://routing-api");
 })
-.AddStandardResilienceHandler()
-.AddHttpMessageHandler<CorrelationIdDelegatingHandler>();
+.AddHttpMessageHandler<CorrelationIdDelegatingHandler>()
+.AddStandardResilienceHandler();
 
 builder.Services.AddHttpClient<PersonnelServiceClient>(client =>
 {
     client.BaseAddress = new Uri("http://personnel-api");
 })
-.AddStandardResilienceHandler()
-.AddHttpMessageHandler<CorrelationIdDelegatingHandler>();
+.AddHttpMessageHandler<CorrelationIdDelegatingHandler>()
+.AddStandardResilienceHandler();
 
 // Register Aggregator Service
 builder.Services.AddScoped<IAggregatorService, AggregatorService.Services.AggregatorService>();

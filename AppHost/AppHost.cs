@@ -1,20 +1,27 @@
-using Aspire.Hosting;
+﻿using Aspire.Hosting;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
 // === DATABASES ===
+// MySQL для TechnicalService
 var mysqlTechnical = builder.AddMySql("mysql-technical")
     .WithDataVolume()
-    .WithLifetime(ContainerLifetime.Persistent);
+    .WithLifetime(ContainerLifetime.Persistent)
+    .WithEnvironment("MYSQL_ROOT_PASSWORD", "windowcloud")
+    .WithEnvironment("MYSQL_DATABASE", "transportservicedb");
 
 var transportServiceDb = mysqlTechnical.AddDatabase("transportservicedb");
 
+// MySQL для RoutingService
 var mysqlRouting = builder.AddMySql("mysql-routing")
     .WithDataVolume()
-    .WithLifetime(ContainerLifetime.Persistent);
+    .WithLifetime(ContainerLifetime.Persistent)
+    .WithEnvironment("MYSQL_ROOT_PASSWORD", "windowcloud")
+    .WithEnvironment("MYSQL_DATABASE", "routesdb");
 
 var routesDb = mysqlRouting.AddDatabase("routesdb");
 
+// MongoDB для PersonnelService
 var mongoPersonnel = builder.AddMongoDB("mongo-personnel")
     .WithDataVolume()
     .WithLifetime(ContainerLifetime.Persistent);
@@ -44,8 +51,10 @@ var aggregator = builder.AddProject<Projects.AggregatorService>("aggregator")
     .WaitFor(personnelApi);
 
 // === API GATEWAY ===
+// ВИПРАВЛЕННЯ: використовуємо WithHttpEndpoint БЕЗ параметра name
+// або задаємо УНІКАЛЬНЕ ім'я (не "http")
 var gateway = builder.AddProject<Projects.ApiGateway>("gateway")
-    .WithHttpEndpoint(port: 5000, name: "http")
+    .WithHttpEndpoint(port: 5000, name: "gateway-http")  // ← Унікальне ім'я!
     .WithReference(technicalApi)
     .WithReference(routingApi)
     .WithReference(personnelApi)

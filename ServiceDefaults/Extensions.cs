@@ -74,8 +74,12 @@ public static class Extensions
 
         if (useOtlpExporter)
         {
-            builder.Services.AddOpenTelemetry()
-                .UseOtlpExporter();
+            // ВИПРАВЛЕННЯ: правильне використання OTLP exporter
+            builder.Services.ConfigureOpenTelemetryTracerProvider(tracerProvider =>
+                tracerProvider.AddOtlpExporter());
+
+            builder.Services.ConfigureOpenTelemetryMeterProvider(meterProvider =>
+                meterProvider.AddOtlpExporter());
         }
 
         return builder;
