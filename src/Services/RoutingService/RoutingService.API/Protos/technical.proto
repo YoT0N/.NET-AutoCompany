@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+option csharp_namespace = "TechnicalService.Grpc";
+
+package technical;
+
+service TechnicalGrpcService {
+  rpc GetBusByCountryNumber (GetBusRequest) returns (BusResponse);
+  rpc GetAllBuses (GetAllBusesRequest) returns (BusListResponse);
+}
+
+message GetBusRequest {
+  string country_number = 1;
+}
+
+message GetAllBusesRequest {
+  int32 skip = 1;
+  int32 limit = 2;
+}
+
+message BusResponse {
+  string country_number = 1;
+  string boarding_number = 2;
+  string brand = 3;
+  int32 passenger_capacity = 4;
+  int32 year_of_manufacture = 5;
+  double mileage = 6;
+  string date_of_receipt = 7;
+  int32 current_status_id = 8;
+  string current_status_name = 9;
+}
+
+message BusListResponse {
+  repeated BusResponse buses = 1;
+}

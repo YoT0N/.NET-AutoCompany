@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+option csharp_namespace = "PersonnelService.Grpc";
+
+package personnel;
+
+// Сервіс для роботи з персоналом
+service PersonnelGrpcService {
+  rpc GetPersonnelById (GetPersonnelByIdRequest) returns (PersonnelResponse);
+  rpc GetAllPersonnel (GetAllPersonnelRequest) returns (PersonnelListResponse);
+  rpc GetWorkShiftsByPersonnel (GetWorkShiftsByPersonnelRequest) returns (WorkShiftListResponse);
+}
+
+// Request/ResponseMessages
+message GetPersonnelByIdRequest {
+  int32 personnel_id = 1;
+}
+
+message GetAllPersonnelRequest {
+  string search_text = 1;
+  string position = 2;
+  string status = 3;
+  int32 skip = 4;
+  int32 limit = 5;
+}
+
+message GetWorkShiftsByPersonnelRequest {
+  int32 personnel_id = 1;
+}
+
+message PersonnelResponse {
+  string id = 1;
+  int32 personnel_id = 2;
+  string full_name = 3;
+  string birth_date = 4;
+  string position = 5;
+  string status = 6;
+  string phone = 7;
+  string email = 8;
+  string address = 9;
+}
+
+message PersonnelListResponse {
+  repeated PersonnelResponse personnel = 1;
+}
+
+message WorkShiftResponse {
+  string id = 1;
+  int32 personnel_id = 2;
+  string shift_date = 3;
+  string start_time = 4;
+  string end_time = 5;
+  string bus_number = 6;
+  string bus_brand = 7;
+  string route_number = 8;
+  double distance_km = 9;
+  string status = 10;
+}
+
+message WorkShiftListResponse {
+  repeated WorkShiftResponse work_shifts = 1;
+}

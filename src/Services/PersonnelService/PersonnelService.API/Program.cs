@@ -1,52 +1,74 @@
-using PersonnelService.API.Middlewares;
 using PersonnelService.Application;
 using PersonnelService.Infrastructure;
 using PersonnelService.Infrastructure.Context;
+using PersonnelService.API.Middlewares;
+using PersonnelService.API.GrpcServices;
 using ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Додаємо ServiceDefaults на самому початку
+// ServiceDefaults
 builder.AddServiceDefaults();
 
-// Додаємо HttpContextAccessor для CorrelationId
-builder.Services.AddHttpContextAccessor();
+// Memory Cache
+builder.Services.AddMemoryCache(options =>
+{
+    options.SizeLimit = 1024;
+});
 
-// Додаємо шари застосунку
+// Application & Infrastructure
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
-// Додаємо контролери
+// Redis
+builder.AddRedisClient("redis");
+
+// gRPC
+builder.Services.AddGrpc(options =>
+{
+    options.EnableDetailedErrors = true;
+});
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .WithExposedHeaders("Grpc-Status", "Grpc-Message", "Grpc-Encoding", "Grpc-Accept-Encoding");
+    });
+});
+
 var app = builder.Build();
+
+// Middlewares
+app.UseMiddleware<GlobalExceptionMiddleware>();
+app.UseCorrelationId();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-}
 
-// Middleware для обробки винятків
-app.UseMiddleware<GlobalExceptionMiddleware>();
-
-// CorrelationId middleware
-app.UseCorrelationId();
-
-app.UseHttpsRedirection();
-app.UseAuthorization();
-app.MapControllers();
-
-// Мапимо health check endpoints
-app.MapDefaultEndpoints();
-
-// Ініціалізація бази даних та seed
-using (var scope = app.Services.CreateScope())
-{
+    using var scope = app.Services.CreateScope();
     var seedManager = scope.ServiceProvider.GetRequiredService<SeedManager>();
     await seedManager.SeedAllAsync();
 }
+
+app.UseGrpcWeb(new GrpcWebOptions { DefaultEnabled = true });
+app.UseCors("AllowAll");
+app.UseAuthorization();
+
+// gRPC endpoint
+app.MapGrpcService<PersonnelGrpcServiceImpl>();
+
+app.MapControllers();
+app.MapDefaultEndpoints();
 
 app.Run();
