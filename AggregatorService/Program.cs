@@ -5,32 +5,34 @@ using RoutingService.Grpc;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ServiceDefaults (Observability, Health Checks)
+// Add ServiceDefaults (OpenTelemetry, Health Checks, Serilog)
 builder.AddServiceDefaults();
 
-// Controllers + Swagger
+// Add HttpContextAccessor for CorrelationId
+builder.Services.AddHttpContextAccessor();
+
+// Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Memory Cache
-builder.Services.AddMemoryCache();
-
-// Redis Distributed Cache через Aspire
+// Redis Distributed Cache
 builder.AddRedisClient("redis");
 
-// HTTP Clients
+// Register HttpClients with CorrelationIdDelegatingHandler
 builder.Services.AddHttpClient<TechnicalServiceClient>(client =>
 {
     client.BaseAddress = new Uri("http://technicalservice-api");
-});
+})
+.AddHttpMessageHandler<CorrelationIdDelegatingHandler>();
 
 builder.Services.AddHttpClient<PersonnelServiceClient>(client =>
 {
     client.BaseAddress = new Uri("http://personnel-api");
-});
+})
+.AddHttpMessageHandler<CorrelationIdDelegatingHandler>();
 
-// gRPC Client для RoutingService
+// Register gRPC Client for RoutingService
 builder.Services.AddGrpcClient<RoutingGrpcService.RoutingGrpcServiceClient>(options =>
 {
     options.Address = new Uri("http://routing-api");
@@ -39,21 +41,23 @@ builder.Services.AddGrpcClient<RoutingGrpcService.RoutingGrpcServiceClient>(opti
 // Register custom clients
 builder.Services.AddScoped<RoutingGrpcClient>();
 
-// Aggregator Service
+// Register AggregatorService
 builder.Services.AddScoped<IAggregatorService, AggregatorService.Services.AggregatorService>();
 
 var app = builder.Build();
 
-// Middleware
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+// Add CorrelationId middleware
 app.UseCorrelationId();
-app.UseHttpsRedirection();
+
 app.UseAuthorization();
+
 app.MapControllers();
 app.MapDefaultEndpoints();
 

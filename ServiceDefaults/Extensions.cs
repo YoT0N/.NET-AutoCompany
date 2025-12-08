@@ -53,10 +53,11 @@ public static class Extensions
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddGrpcClientInstrumentation() // gRPC client tracing
+
                     .AddSqlClientInstrumentation(options =>
                     {
-                        options.SetDbStatementForText = true;
                         options.RecordException = true;
+                        options.EnableConnectionLevelAttributes = true;
                     });
 
                 // MongoDB instrumentation

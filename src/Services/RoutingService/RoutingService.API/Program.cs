@@ -1,48 +1,46 @@
-using Microsoft.EntityFrameworkCore;
 using RoutingService.API.Extensions;
 using RoutingService.API.Services;
-using RoutingService.Dal.Data;
 using ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ServiceDefaults
+// Add ServiceDefaults (OpenTelemetry, Health Checks, Serilog)
 builder.AddServiceDefaults();
 
-// Infrastructure Services
-builder.Services.AddInfrastructureServices(builder.Configuration);
+// Add HttpContextAccessor for CorrelationId
+builder.Services.AddHttpContextAccessor();
 
-// Application Services
-builder.Services.AddApplicationServices();
-
-// API Services
-builder.Services.AddApiServices(builder.Configuration, builder.Environment);
-
-// Memory Cache
-builder.Services.AddMemoryCache();
-
-// Redis через Aspire
+// Add Redis for caching
 builder.AddRedisClient("redis");
 
-// gRPC Services
+// Add Memory Cache
+builder.Services.AddMemoryCache();
+
+// Add database and repositories
+builder.Services.AddInfrastructureServices(builder.Configuration);
+
+// Add application services
+builder.Services.AddApplicationServices();
+
+// Add API services (Controllers, Swagger, etc.)
+builder.Services.AddApiServices(builder.Configuration, builder.Environment);
+
+// Register gRPC service
 builder.Services.AddGrpc();
 
 var app = builder.Build();
 
-// Apply migrations and seed
+// Apply migrations and seed data
 await app.ApplyMigrationsAndSeedAsync();
 
-// Configure middleware
+// Configure middleware pipeline
 app.ConfigureMiddleware();
 
-// Map gRPC Service
-app.MapGrpcService<RoutingGrpcService>();
+// Add CorrelationId middleware
+app.UseCorrelationId();
 
-// Enable gRPC reflection in development
-if (app.Environment.IsDevelopment())
-{
-    app.MapGrpcReflectionService();
-}
+// Map gRPC service
+app.MapGrpcService<RoutingGrpcService>();
 
 app.MapDefaultEndpoints();
 
