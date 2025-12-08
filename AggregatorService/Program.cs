@@ -11,13 +11,26 @@ builder.AddServiceDefaults();
 // Add HttpContextAccessor for CorrelationId
 builder.Services.AddHttpContextAccessor();
 
+// Memory Cache (L1)
+builder.Services.AddMemoryCache();
+
+// Redis Distributed Cache (L2) - через Aspire
+builder.AddRedisClient("redis");
+
+// Додаємо IDistributedCache реалізацію через StackExchange.Redis
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    var redisConnectionString = builder.Configuration.GetConnectionString("redis");
+    if (!string.IsNullOrEmpty(redisConnectionString))
+    {
+        options.Configuration = redisConnectionString;
+    }
+});
+
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-// Redis Distributed Cache
-builder.AddRedisClient("redis");
 
 // Register HttpClients with CorrelationIdDelegatingHandler
 builder.Services.AddHttpClient<TechnicalServiceClient>(client =>
@@ -32,28 +45,23 @@ builder.Services.AddHttpClient<PersonnelServiceClient>(client =>
 })
 .AddHttpMessageHandler<CorrelationIdDelegatingHandler>();
 
-// Register gRPC Client for RoutingService
 builder.Services.AddGrpcClient<RoutingGrpcService.RoutingGrpcServiceClient>(options =>
 {
     options.Address = new Uri("http://routing-api");
 });
 
-// Register custom clients
 builder.Services.AddScoped<RoutingGrpcClient>();
 
-// Register AggregatorService
 builder.Services.AddScoped<IAggregatorService, AggregatorService.Services.AggregatorService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// Add CorrelationId middleware
 app.UseCorrelationId();
 
 app.UseAuthorization();
