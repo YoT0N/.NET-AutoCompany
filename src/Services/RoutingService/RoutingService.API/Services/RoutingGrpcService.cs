@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace RoutingService.API.Services;
 
-public class RoutingGrpcService : RoutingGrpcService.RoutingGrpcServiceBase
+public class RoutingGrpcService : Grpc.RoutingGrpcService.RoutingGrpcServiceBase
 {
     private readonly IRouteService _routeService;
     private readonly IRouteSheetService _routeSheetService;

@@ -5,60 +5,46 @@ using RoutingService.Grpc;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Додати Service Defaults
+// ServiceDefaults (Observability, Health Checks)
 builder.AddServiceDefaults();
 
-// Додати контролери
+// Controllers + Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Додати кешування
+// Memory Cache
 builder.Services.AddMemoryCache();
 
-// Додати Redis через Aspire
-builder.AddRedisDistributedCache("redis");
+// Redis Distributed Cache через Aspire
+builder.AddRedisClient("redis");
 
-// Додати HttpContextAccessor для CorrelationId
-builder.Services.AddHttpContextAccessor();
-
-// Зареєструвати HTTP clients (старі для інших сервісів)
+// HTTP Clients
 builder.Services.AddHttpClient<TechnicalServiceClient>(client =>
 {
     client.BaseAddress = new Uri("http://technicalservice-api");
-})
-.AddHttpMessageHandler<CorrelationIdDelegatingHandler>();
+});
 
 builder.Services.AddHttpClient<PersonnelServiceClient>(client =>
 {
     client.BaseAddress = new Uri("http://personnel-api");
-})
-.AddHttpMessageHandler<CorrelationIdDelegatingHandler>();
-
-// Зареєструвати gRPC client для RoutingService
-builder.Services.AddGrpcClient<RoutingGrpcService.RoutingGrpcServiceClient>(options =>
-{
-    options.Address = new Uri("http://routing-api:5063"); // gRPC endpoint
-})
-.ConfigurePrimaryHttpMessageHandler(() =>
-{
-    return new SocketsHttpHandler
-    {
-        PooledConnectionIdleTimeout = Timeout.InfiniteTimeSpan,
-        KeepAlivePingDelay = TimeSpan.FromSeconds(60),
-        KeepAlivePingTimeout = TimeSpan.FromSeconds(30),
-        EnableMultipleHttp2Connections = true
-    };
 });
 
-// Зареєструвати gRPC client wrapper
+// gRPC Client для RoutingService
+builder.Services.AddGrpcClient<RoutingGrpcService.RoutingGrpcServiceClient>(options =>
+{
+    options.Address = new Uri("http://routing-api");
+});
+
+// Register custom clients
 builder.Services.AddScoped<RoutingGrpcClient>();
 
-// Зареєструвати aggregator service
+// Aggregator Service
 builder.Services.AddScoped<IAggregatorService, AggregatorService.Services.AggregatorService>();
 
 var app = builder.Build();
 
+// Middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -66,10 +52,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCorrelationId();
-
 app.UseHttpsRedirection();
 app.UseAuthorization();
-
 app.MapControllers();
 app.MapDefaultEndpoints();
 

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
@@ -8,29 +8,34 @@
 
 	<ItemGroup>
 		<PackageReference Include="Aspire.Hosting.AppHost" Version="9.5.0" />
+		
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
 
 		<!-- gRPC Client packages -->
-		<PackageReference Include="Grpc.Net.Client" Version="2.59.0" />
-		<PackageReference Include="Grpc.Net.ClientFactory" Version="2.59.0" />
-		<PackageReference Include="Google.Protobuf" Version="3.25.1" />
-		<PackageReference Include="Grpc.Tools" Version="2.59.0">
+		<PackageReference Include="Google.Protobuf" Version="3.32.0" />
+		<PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
+		<PackageReference Include="Grpc.Net.ClientFactory" Version="2.71.0" />
+		<PackageReference Include="Grpc.Tools" Version="2.72.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 
 		<!-- Redis for distributed caching -->
 		<PackageReference Include="Aspire.StackExchange.Redis" Version="9.5.0" />
-		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\ServiceDefaults\ServiceDefaults.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Protos\" />
+	</ItemGroup>
+
 	<!-- Proto file configuration for gRPC Client -->
 	<ItemGroup>
 		<Protobuf Include="Protos\routing.proto" GrpcServices="Client" />
 	</ItemGroup>
-
+	
 </Project>
