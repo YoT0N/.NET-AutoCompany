@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TechnicalService.Application.Interfaces;
+using TechnicalService.Bll.Interfaces;
 
 namespace TechnicalService.API.Controllers;
 

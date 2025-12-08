@@ -1,96 +1,51 @@
 ﻿using MongoDB.Driver;
-using PersonnelService.Core.Interfaces;
-using PersonnelService.Core.Models;
-using PersonnelService.Infrastructure.Data;
+using PersonnelService.Domain.Entities;
+using PersonnelService.Domain.Interfaces;
+using PersonnelService.Infrastructure.Context;
 
 namespace PersonnelService.Infrastructure.Repositories
 {
-    public class PersonnelRepository : IPersonnelRepository
+    public class PersonnelRepository : MongoRepository<Personnel>, IPersonnelRepository
     {
-        private readonly IMongoCollection<Personnel> _collection;
-
         public PersonnelRepository(MongoDbContext context)
-        {
-            _collection = context.Personnel;
-        }
-
-        public async Task<IEnumerable<Personnel>> GetAllAsync()
-        {
-            return await _collection.Find(_ => true).ToListAsync();
-        }
-
-        public async Task<Personnel?> GetByIdAsync(string id)
-        {
-            return await _collection.Find(p => p.Id == id).FirstOrDefaultAsync();
-        }
+            : base(context.Personnel) { }
 
         public async Task<Personnel?> GetByPersonnelIdAsync(int personnelId)
         {
-            return await _collection.Find(p => p.PersonnelId == personnelId).FirstOrDefaultAsync();
+            return await _collection
+                .Find(p => p.PersonnelId == personnelId)
+                .FirstOrDefaultAsync();
         }
 
-        public async Task<IEnumerable<Personnel>> GetByPositionAsync(string position)
+        public async Task<IReadOnlyCollection<Personnel>> GetByPositionAsync(string position)
         {
-            return await _collection.Find(p => p.Position == position).ToListAsync();
+            var list = await _collection
+                .Find(p => p.Position == position)
+                .ToListAsync();
+            return list.AsReadOnly();
         }
 
-        public async Task<IEnumerable<Personnel>> GetByStatusAsync(string status)
+        public async Task<IReadOnlyCollection<Personnel>> GetByStatusAsync(string status)
         {
-            return await _collection.Find(p => p.Status == status).ToListAsync();
+            var list = await _collection
+                .Find(p => p.Status == status)
+                .ToListAsync();
+            return list.AsReadOnly();
         }
 
-        public async Task<IEnumerable<Personnel>> GetActivePersonnelAsync()
+        public async Task<IReadOnlyCollection<Personnel>> GetActivePersonnelAsync()
         {
-            return await _collection.Find(p => p.Status == "Active").ToListAsync();
+            var list = await _collection
+                .Find(p => p.Status == "Active")
+                .ToListAsync();
+            return list.AsReadOnly();
         }
 
-        public async Task<Personnel> CreateAsync(Personnel personnel)
+        public async Task<bool> ExistsByPersonnelIdAsync(int personnelId, CancellationToken cancellationToken = default)
         {
-            await _collection.InsertOneAsync(personnel);
-            return personnel;
-        }
-
-        public async Task<bool> UpdateAsync(string id, Personnel personnel)
-        {
-            personnel.UpdatedAt = DateTime.UtcNow;
-            var result = await _collection.ReplaceOneAsync(p => p.Id == id, personnel);
-            return result.ModifiedCount > 0;
-        }
-
-        public async Task<bool> DeleteAsync(string id)
-        {
-            var result = await _collection.DeleteOneAsync(p => p.Id == id);
-            return result.DeletedCount > 0;
-        }
-
-        public async Task<bool> UpdateStatusAsync(string id, string status)
-        {
-            var update = Builders<Personnel>.Update
-                .Set(p => p.Status, status)
-                .Set(p => p.UpdatedAt, DateTime.UtcNow);
-
-            var result = await _collection.UpdateOneAsync(p => p.Id == id, update);
-            return result.ModifiedCount > 0;
-        }
-
-        public async Task<bool> UpdateContactsAsync(string id, PersonnelContacts contacts)
-        {
-            var update = Builders<Personnel>.Update
-                .Set(p => p.Contacts, contacts)
-                .Set(p => p.UpdatedAt, DateTime.UtcNow);
-
-            var result = await _collection.UpdateOneAsync(p => p.Id == id, update);
-            return result.ModifiedCount > 0;
-        }
-
-        public async Task<bool> AddDocumentAsync(string id, PersonnelDocumentInfo document)
-        {
-            var update = Builders<Personnel>.Update
-                .Push(p => p.Documents, document)
-                .Set(p => p.UpdatedAt, DateTime.UtcNow);
-
-            var result = await _collection.UpdateOneAsync(p => p.Id == id, update);
-            return result.ModifiedCount > 0;
+            var count = await _collection
+                .CountDocumentsAsync(p => p.PersonnelId == personnelId, cancellationToken: cancellationToken);
+            return count > 0;
         }
 
         public async Task<int> GetNextPersonnelIdAsync()
@@ -102,6 +57,33 @@ namespace PersonnelService.Infrastructure.Repositories
                 .FirstOrDefaultAsync();
 
             return maxPersonnel?.PersonnelId + 1 ?? 1;
+        }
+
+        public async Task<IReadOnlyCollection<Personnel>> SearchAsync(
+            string? searchText = null,
+            string? position = null,
+            string? status = null,
+            int skip = 0,
+            int limit = 10)
+        {
+            var filter = Builders<Personnel>.Filter.Empty;
+
+            if (!string.IsNullOrWhiteSpace(searchText))
+                filter &= Builders<Personnel>.Filter.Text(searchText);
+
+            if (!string.IsNullOrWhiteSpace(position))
+                filter &= Builders<Personnel>.Filter.Eq(p => p.Position, position);
+
+            if (!string.IsNullOrWhiteSpace(status))
+                filter &= Builders<Personnel>.Filter.Eq(p => p.Status, status);
+
+            var list = await _collection
+                .Find(filter)
+                .Skip(skip)
+                .Limit(limit)
+                .ToListAsync();
+
+            return list.AsReadOnly();
         }
     }
 }

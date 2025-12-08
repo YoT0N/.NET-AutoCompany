@@ -1,4 +1,4 @@
-﻿namespace TechnicalService.Core.Entities;
+﻿namespace TechnicalService.Domain.Entities;
 
 public class BusMaintenanceHistory
 {

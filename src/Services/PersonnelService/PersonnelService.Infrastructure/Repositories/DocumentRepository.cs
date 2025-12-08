@@ -1,72 +1,138 @@
-﻿using MongoDB.Driver;
-using PersonnelService.Core.Interfaces;
-using PersonnelService.Core.Models;
-using PersonnelService.Infrastructure.Data;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
+using PersonnelService.Domain.Entities;
+using PersonnelService.Domain.Interfaces;
+using PersonnelService.Infrastructure.Context;
 
 namespace PersonnelService.Infrastructure.Repositories
 {
-    public class DocumentRepository : IDocumentRepository
+    public class DocumentRepository : MongoRepository<PersonnelDocument>, IDocumentRepository
     {
-        private readonly IMongoCollection<PersonnelDocument> _collection;
-
         public DocumentRepository(MongoDbContext context)
+            : base(context.Documents) { }
+
+        public async Task<IReadOnlyCollection<PersonnelDocument>> GetByPersonnelIdAsync(int personnelId)
         {
-            _collection = context.PersonnelDocuments;
+            var list = await _collection
+                .Find(d => d.PersonnelId == personnelId)
+                .SortByDescending(d => d.UploadedAt)
+                .ToListAsync();
+            return list.AsReadOnly();
         }
 
-        public async Task<IEnumerable<PersonnelDocument>> GetAllAsync()
+        public async Task<IReadOnlyCollection<PersonnelDocument>> GetByDocTypeAsync(string docType)
         {
-            return await _collection.Find(_ => true).ToListAsync();
+            var list = await _collection
+                .Find(d => d.DocType == docType)
+                .ToListAsync();
+            return list.AsReadOnly();
         }
 
-        public async Task<PersonnelDocument?> GetByIdAsync(string id)
+        public async Task<IReadOnlyCollection<PersonnelDocument>> GetExpiredDocumentsAsync(DateTime? beforeDate = null)
         {
-            return await _collection.Find(d => d.Id == id).FirstOrDefaultAsync();
+            var date = beforeDate ?? DateTime.UtcNow;
+            var list = await _collection
+                .Find(d => d.ValidUntil.HasValue && d.ValidUntil.Value < date)
+                .ToListAsync();
+            return list.AsReadOnly();
         }
 
-        public async Task<IEnumerable<PersonnelDocument>> GetByPersonnelIdAsync(int personnelId)
+        public async Task<IReadOnlyCollection<PersonnelDocument>> GetExpiringDocumentsAsync(int daysThreshold = 30)
         {
-            return await _collection.Find(d => d.PersonnelId == personnelId).ToListAsync();
+            var today = DateTime.UtcNow;
+            var futureDate = today.AddDays(daysThreshold);
+
+            var list = await _collection
+                .Find(d => d.ValidUntil.HasValue
+                    && d.ValidUntil.Value > today
+                    && d.ValidUntil.Value <= futureDate)
+                .ToListAsync();
+            return list.AsReadOnly();
         }
 
-        public async Task<IEnumerable<PersonnelDocument>> GetByDocTypeAsync(string docType)
+        public async Task<IReadOnlyCollection<PersonnelDocument>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
         {
-            return await _collection.Find(d => d.DocType == docType).ToListAsync();
+            var list = await _collection
+                .Find(d => d.UploadedAt >= startDate && d.UploadedAt <= endDate)
+                .ToListAsync();
+            return list.AsReadOnly();
         }
 
-        public async Task<IEnumerable<PersonnelDocument>> GetExpiredDocumentsAsync(DateTime beforeDate)
+        public async Task DeleteByPersonnelIdAsync(int personnelId)
         {
-            return await _collection.Find(d => d.ValidUntil < beforeDate).ToListAsync();
+            await _collection.DeleteManyAsync(d => d.PersonnelId == personnelId);
         }
 
-        public async Task<IEnumerable<PersonnelDocument>> GetExpiringDocumentsAsync(DateTime withinDate)
+        public async Task<bool> HasDocumentTypeAsync(int personnelId, string docType, CancellationToken cancellationToken = default)
         {
-            var today = DateTime.UtcNow.Date;
-            return await _collection.Find(d => d.ValidUntil >= today && d.ValidUntil <= withinDate).ToListAsync();
+            var count = await _collection
+                .CountDocumentsAsync(
+                    d => d.PersonnelId == personnelId && d.DocType == docType,
+                    cancellationToken: cancellationToken);
+            return count > 0;
         }
 
-        public async Task<PersonnelDocument> CreateAsync(PersonnelDocument document)
+        public async Task<Dictionary<string, int>> GetDocumentCountByTypeAsync()
         {
-            await _collection.InsertOneAsync(document);
-            return document;
+            var pipeline = new[]
+            {
+                new BsonDocument("$group", new BsonDocument
+                {
+                    { "_id", "$docType" },
+                    { "count", new BsonDocument("$sum", 1) }
+                })
+            };
+
+            var results = await _collection.Aggregate<BsonDocument>(pipeline).ToListAsync();
+
+            return results.ToDictionary(
+                doc => doc["_id"].AsString,
+                doc => doc["count"].AsInt32
+            );
         }
 
-        public async Task<bool> UpdateAsync(string id, PersonnelDocument document)
+        public async Task<IReadOnlyCollection<PersonnelDocument>> SearchAsync(
+            int? personnelId = null,
+            string? docType = null,
+            bool? onlyExpired = null,
+            bool? onlyExpiring = null,
+            int skip = 0,
+            int limit = 10)
         {
-            var result = await _collection.ReplaceOneAsync(d => d.Id == id, document);
-            return result.ModifiedCount > 0;
-        }
+            var filter = Builders<PersonnelDocument>.Filter.Empty;
 
-        public async Task<bool> DeleteAsync(string id)
-        {
-            var result = await _collection.DeleteOneAsync(d => d.Id == id);
-            return result.DeletedCount > 0;
-        }
+            if (personnelId.HasValue)
+                filter &= Builders<PersonnelDocument>.Filter.Eq(d => d.PersonnelId, personnelId.Value);
 
-        public async Task<bool> DeleteByPersonnelIdAsync(int personnelId)
-        {
-            var result = await _collection.DeleteManyAsync(d => d.PersonnelId == personnelId);
-            return result.DeletedCount > 0;
+            if (!string.IsNullOrWhiteSpace(docType))
+                filter &= Builders<PersonnelDocument>.Filter.Eq(d => d.DocType, docType);
+
+            if (onlyExpired == true)
+            {
+                filter &= Builders<PersonnelDocument>.Filter.And(
+                    Builders<PersonnelDocument>.Filter.Ne(d => d.ValidUntil, null),
+                    Builders<PersonnelDocument>.Filter.Lt(d => d.ValidUntil, DateTime.UtcNow)
+                );
+            }
+
+            if (onlyExpiring == true)
+            {
+                var today = DateTime.UtcNow;
+                var futureDate = today.AddDays(30);
+                filter &= Builders<PersonnelDocument>.Filter.And(
+                    Builders<PersonnelDocument>.Filter.Ne(d => d.ValidUntil, null),
+                    Builders<PersonnelDocument>.Filter.Gt(d => d.ValidUntil, today),
+                    Builders<PersonnelDocument>.Filter.Lte(d => d.ValidUntil, futureDate)
+                );
+            }
+
+            var list = await _collection
+                .Find(filter)
+                .Skip(skip)
+                .Limit(limit)
+                .ToListAsync();
+
+            return list.AsReadOnly();
         }
     }
 }

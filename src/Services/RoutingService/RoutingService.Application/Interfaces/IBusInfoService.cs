@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using RoutingService.Core.DTOs;
+using RoutingService.Bll.DTOs.Common;
+using RoutingService.Bll.DTOs;
 
-namespace RoutingService.Application.Interfaces
+namespace RoutingService.Bll.Interfaces
 {
     public interface IBusInfoService
     {
@@ -13,5 +14,7 @@ namespace RoutingService.Application.Interfaces
         Task<BusInfoDto?> UpdateBusAsync(int id, UpdateBusInfoDto dto);
         Task<bool> DeleteBusAsync(int id);
         Task<bool> BusExistsAsync(int id);
+
+        Task<PagedResultDto<BusInfoDto>> GetBusesPagedAsync(BusFilterParameters parameters);
     }
 }

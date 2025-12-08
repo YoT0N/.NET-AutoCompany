@@ -1,8 +1,8 @@
-﻿using TechnicalService.Application.Interfaces;
-using TechnicalService.Core.Entities;
-using TechnicalService.Core.Interfaces;
+﻿using TechnicalService.Dal.Interfaces;
+using TechnicalService.Domain.Entities;
+using TechnicalService.Bll.Interfaces;
 
-namespace TechnicalService.Application.Services;
+namespace TechnicalService.Bll.Services;
 
 public class RepairPartService : IRepairPartService
 {

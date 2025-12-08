@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using RoutingService.Core.DTOs;
+using RoutingService.Bll.DTOs.Common;
+using RoutingService.Bll.DTOs;
 
-namespace RoutingService.Application.Interfaces
+namespace RoutingService.Bll.Interfaces
 {
     public interface IRouteSheetService
     {
@@ -16,5 +17,7 @@ namespace RoutingService.Application.Interfaces
         Task<RouteSheetDto> CreateRouteSheetAsync(CreateRouteSheetDto dto);
         Task<RouteSheetDto?> UpdateRouteSheetAsync(int id, UpdateRouteSheetDto dto);
         Task<bool> DeleteRouteSheetAsync(int id);
+
+        Task<PagedResultDto<RouteSheetDetailsDto>> GetRouteSheetsPagedAsync(RouteSheetFilterParameters parameters);
     }
 }

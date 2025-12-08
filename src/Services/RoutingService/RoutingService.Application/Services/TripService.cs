@@ -1,33 +1,42 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using RoutingService.Application.Interfaces;
-using RoutingService.Core.DTOs;
-using RoutingService.Core.Entities;
-using RoutingService.Core.Interfaces;
+using RoutingService.Bll.DTOs;
+using RoutingService.Bll.DTOs.Common;
+using RoutingService.Bll.Interfaces;
+using RoutingService.Domain.Entities;
+using RoutingService.Domain.Exceptions;
+using RoutingService.Domain.Repositories;
 
-namespace RoutingService.Application.Services
+namespace RoutingService.Bll.Services
 {
     public class TripService : ITripService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public TripService(IUnitOfWork unitOfWork)
+        public TripService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         public async Task<IEnumerable<TripDto>> GetAllTripsAsync()
         {
             var trips = await _unitOfWork.Trips.GetAllAsync();
-            return trips.Select(MapToDto);
+            return _mapper.Map<IEnumerable<TripDto>>(trips);
         }
 
         public async Task<TripDto?> GetTripByIdAsync(int id)
         {
             var trip = await _unitOfWork.Trips.GetByIdAsync(id);
-            return trip != null ? MapToDto(trip) : null;
+
+            if (trip == null)
+                throw new EntityNotFoundException(nameof(Trip), id);
+
+            return _mapper.Map<TripDto>(trip);
         }
 
         public async Task<TripDetailsDto?> GetTripDetailsAsync(int id)
@@ -40,13 +49,18 @@ namespace RoutingService.Application.Services
                     .ThenInclude(rs => rs.BusInfo)
                 .FirstOrDefaultAsync(t => t.TripId == id);
 
-            if (trip == null) return null;
+            if (trip == null)
+                throw new EntityNotFoundException(nameof(Trip), id);
 
-            return MapToDetailsDto(trip);
+            return _mapper.Map<TripDetailsDto>(trip);
         }
 
         public async Task<IEnumerable<TripDetailsDto>> GetTripsByRouteSheetAsync(int sheetId)
         {
+            var sheetExists = await _unitOfWork.RouteSheets.ExistsAsync(rs => rs.SheetId == sheetId);
+            if (!sheetExists)
+                throw new EntityNotFoundException(nameof(RouteSheet), sheetId);
+
             var trips = await _unitOfWork.Trips
                 .Query()
                 .Include(t => t.RouteSheet)
@@ -56,7 +70,7 @@ namespace RoutingService.Application.Services
                 .Where(t => t.SheetId == sheetId)
                 .ToListAsync();
 
-            return trips.Select(MapToDetailsDto);
+            return _mapper.Map<IEnumerable<TripDetailsDto>>(trips);
         }
 
         public async Task<IEnumerable<TripDetailsDto>> GetCompletedTripsAsync()
@@ -70,7 +84,7 @@ namespace RoutingService.Application.Services
                 .Where(t => t.Completed)
                 .ToListAsync();
 
-            return trips.Select(MapToDetailsDto);
+            return _mapper.Map<IEnumerable<TripDetailsDto>>(trips);
         }
 
         public async Task<IEnumerable<TripDetailsDto>> GetPendingTripsAsync()
@@ -84,48 +98,99 @@ namespace RoutingService.Application.Services
                 .Where(t => !t.Completed)
                 .ToListAsync();
 
-            return trips.Select(MapToDetailsDto);
+            return _mapper.Map<IEnumerable<TripDetailsDto>>(trips);
+        }
+
+        public async Task<PagedResultDto<TripDetailsDto>> GetTripsPagedAsync(TripFilterParameters parameters)
+        {
+            IQueryable<Trip> query = _unitOfWork.Trips
+                .Query()
+                .Include(t => t.RouteSheet)
+                    .ThenInclude(rs => rs.Route)
+                .Include(t => t.RouteSheet)
+                    .ThenInclude(rs => rs.BusInfo);
+
+            // Apply filters
+            if (parameters.SheetId.HasValue)
+            {
+                query = query.Where(t => t.SheetId == parameters.SheetId.Value);
+            }
+
+            if (parameters.Completed.HasValue)
+            {
+                query = query.Where(t => t.Completed == parameters.Completed.Value);
+            }
+
+            if (parameters.Date.HasValue)
+            {
+                query = query.Where(t => t.RouteSheet.SheetDate.Date == parameters.Date.Value.Date);
+            }
+
+            // Apply sorting
+            query = parameters.SortBy?.ToLower() switch
+            {
+                "scheduled" => parameters.SortDirection.ToLower() == "desc"
+                    ? query.OrderByDescending(t => t.ScheduledDeparture)
+                    : query.OrderBy(t => t.ScheduledDeparture),
+                "actual" => parameters.SortDirection.ToLower() == "desc"
+                    ? query.OrderByDescending(t => t.ActualDeparture)
+                    : query.OrderBy(t => t.ActualDeparture),
+                "completed" => parameters.SortDirection.ToLower() == "desc"
+                    ? query.OrderByDescending(t => t.Completed)
+                    : query.OrderBy(t => t.Completed),
+                _ => query.OrderBy(t => t.ScheduledDeparture)
+            };
+
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination
+            var trips = await query
+                .Skip(parameters.Skip)
+                .Take(parameters.PageSize)
+                .ToListAsync();
+
+            var tripDtos = _mapper.Map<IEnumerable<TripDetailsDto>>(trips);
+
+            return new PagedResultDto<TripDetailsDto>(
+                tripDtos,
+                parameters.Page,
+                parameters.PageSize,
+                totalCount);
         }
 
         public async Task<TripDto> CreateTripAsync(CreateTripDto dto)
         {
             var sheetExists = await _unitOfWork.RouteSheets.ExistsAsync(rs => rs.SheetId == dto.SheetId);
             if (!sheetExists)
-                throw new KeyNotFoundException($"RouteSheet with ID {dto.SheetId} not found");
+                throw new EntityNotFoundException(nameof(RouteSheet), dto.SheetId);
 
-            var trip = new Trip
-            {
-                SheetId = dto.SheetId,
-                ScheduledDeparture = dto.ScheduledDeparture,
-                ActualDeparture = null,
-                Completed = false
-            };
+            var trip = _mapper.Map<Trip>(dto);
 
             await _unitOfWork.Trips.AddAsync(trip);
             await _unitOfWork.SaveChangesAsync();
 
-            return MapToDto(trip);
+            return _mapper.Map<TripDto>(trip);
         }
 
         public async Task<TripDto?> UpdateTripAsync(int id, UpdateTripDto dto)
         {
             var trip = await _unitOfWork.Trips.GetByIdAsync(id);
-            if (trip == null) return null;
+            if (trip == null)
+                throw new EntityNotFoundException(nameof(Trip), id);
 
-            if (dto.ScheduledDeparture.HasValue) trip.ScheduledDeparture = dto.ScheduledDeparture.Value;
-            if (dto.ActualDeparture.HasValue) trip.ActualDeparture = dto.ActualDeparture.Value;
-            if (dto.Completed.HasValue) trip.Completed = dto.Completed.Value;
+            _mapper.Map(dto, trip);
 
             _unitOfWork.Trips.Update(trip);
             await _unitOfWork.SaveChangesAsync();
 
-            return MapToDto(trip);
+            return _mapper.Map<TripDto>(trip);
         }
 
         public async Task<bool> DeleteTripAsync(int id)
         {
             var trip = await _unitOfWork.Trips.GetByIdAsync(id);
-            if (trip == null) return false;
+            if (trip == null)
+                throw new EntityNotFoundException(nameof(Trip), id);
 
             _unitOfWork.Trips.Delete(trip);
             await _unitOfWork.SaveChangesAsync();
@@ -136,40 +201,19 @@ namespace RoutingService.Application.Services
         public async Task<bool> MarkTripAsCompletedAsync(int id)
         {
             var trip = await _unitOfWork.Trips.GetByIdAsync(id);
-            if (trip == null) return false;
+            if (trip == null)
+                throw new EntityNotFoundException(nameof(Trip), id);
 
             trip.Completed = true;
+            if (!trip.ActualDeparture.HasValue)
+            {
+                trip.ActualDeparture = trip.ScheduledDeparture;
+            }
+
             _unitOfWork.Trips.Update(trip);
             await _unitOfWork.SaveChangesAsync();
 
             return true;
-        }
-
-        private static TripDto MapToDto(Trip trip)
-        {
-            return new TripDto
-            {
-                TripId = trip.TripId,
-                SheetId = trip.SheetId,
-                ScheduledDeparture = trip.ScheduledDeparture,
-                ActualDeparture = trip.ActualDeparture,
-                Completed = trip.Completed
-            };
-        }
-
-        private static TripDetailsDto MapToDetailsDto(Trip trip)
-        {
-            return new TripDetailsDto
-            {
-                TripId = trip.TripId,
-                SheetId = trip.SheetId,
-                ScheduledDeparture = trip.ScheduledDeparture,
-                ActualDeparture = trip.ActualDeparture,
-                Completed = trip.Completed,
-                SheetDate = trip.RouteSheet.SheetDate,
-                RouteNumber = trip.RouteSheet.Route.RouteNumber,
-                BusCountryNumber = trip.RouteSheet.BusInfo.CountryNumber
-            };
         }
     }
 }

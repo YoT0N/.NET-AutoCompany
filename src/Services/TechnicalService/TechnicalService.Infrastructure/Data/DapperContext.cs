@@ -1,19 +1,16 @@
 ﻿using Microsoft.Extensions.Configuration;
-using MySql.Data.MySqlClient;
-using System.Configuration;
+using MySqlConnector;
 using System.Data;
-
-namespace TechnicalService.Infrastructure.Data;
 
 public class DapperContext
 {
     private readonly string _connectionString;
 
-    public DapperContext(IConfiguration configuration)
+    public DapperContext(IConfiguration config)
     {
-        _connectionString = configuration.GetConnectionString("DefaultConnection");
+        _connectionString = config.GetConnectionString("DefaultConnection");
     }
 
-    public IDbConnection CreateConnection()
+    public MySqlConnection CreateConnection()
         => new MySqlConnection(_connectionString);
 }

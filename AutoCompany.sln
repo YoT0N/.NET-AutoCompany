@@ -15,23 +15,23 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PersonnelService", "Personn
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TechnicalService.API", "src\Services\TechnicalService\TechnicalService.API\TechnicalService.API.csproj", "{2B5B0659-28CE-4897-AB48-574C4DF5B201}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TechnicalService.Core", "src\Services\TechnicalService\TechnicalService.Core\TechnicalService.Core.csproj", "{0BBB6CB5-7849-449E-95EB-B2824991C4A1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TechnicalService.Domain", "src\Services\TechnicalService\TechnicalService.Core\TechnicalService.Domain.csproj", "{0BBB6CB5-7849-449E-95EB-B2824991C4A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TechnicalService.Application", "src\Services\TechnicalService\TechnicalService.Application\TechnicalService.Application.csproj", "{B6036567-D173-4748-AAF8-D452D120FAFC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TechnicalService.Bll", "src\Services\TechnicalService\TechnicalService.Application\TechnicalService.Bll.csproj", "{B6036567-D173-4748-AAF8-D452D120FAFC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TechnicalService.Infrastructure", "src\Services\TechnicalService\TechnicalService.Infrastructure\TechnicalService.Infrastructure.csproj", "{C13FA930-9116-4354-9675-8856735DAA2D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TechnicalService.Dal", "src\Services\TechnicalService\TechnicalService.Infrastructure\TechnicalService.Dal.csproj", "{C13FA930-9116-4354-9675-8856735DAA2D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoutingService.API", "src\Services\RoutingService\RoutingService.API\RoutingService.API.csproj", "{D335DFBB-1D72-4E7B-A141-12C8BEEF051D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoutingService.Core", "src\Services\RoutingService\RoutingService.Core\RoutingService.Core.csproj", "{9D606C6C-5DAD-4BCE-965B-3AAE92C07B96}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoutingService.Domain", "src\Services\RoutingService\RoutingService.Core\RoutingService.Domain.csproj", "{9D606C6C-5DAD-4BCE-965B-3AAE92C07B96}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoutingService.Infrastructure", "src\Services\RoutingService\RoutingService.Infrastructure\RoutingService.Infrastructure.csproj", "{11268DA6-A5FE-4192-B798-FCFCB38067A2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoutingService.Dal", "src\Services\RoutingService\RoutingService.Infrastructure\RoutingService.Dal.csproj", "{11268DA6-A5FE-4192-B798-FCFCB38067A2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoutingService.Application", "src\Services\RoutingService\RoutingService.Application\RoutingService.Application.csproj", "{E2860DD0-FE45-46D8-BE8B-FCA3DFAB11CE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoutingService.Bll", "src\Services\RoutingService\RoutingService.Application\RoutingService.Bll.csproj", "{E2860DD0-FE45-46D8-BE8B-FCA3DFAB11CE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonnelService.API", "src\Services\PersonnelService\PersonnelService.API\PersonnelService.API.csproj", "{34A79B97-A943-47DF-9D50-0F5ECDF90C4E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonnelService.Core", "src\Services\PersonnelService\PersonnelService.Core\PersonnelService.Core.csproj", "{8A9656C4-1DF7-4565-8B74-45AAE962FBB2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonnelService.Domain", "src\Services\PersonnelService\PersonnelService.Core\PersonnelService.Domain.csproj", "{8A9656C4-1DF7-4565-8B74-45AAE962FBB2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonnelService.Infrastructure", "src\Services\PersonnelService\PersonnelService.Infrastructure\PersonnelService.Infrastructure.csproj", "{9EFC5CEB-5135-4E58-B118-257A249086A3}"
 EndProject
@@ -80,6 +80,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SeedData", "SeedData", "{E3
 		PhysicalExamination.json = PhysicalExamination.json
 		WorkShiftLog.json = WorkShiftLog.json
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppHost", "AppHost\AppHost.csproj", "{29EC42B1-1FB0-4CBE-A508-EB6B7002E798}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceDefaults", "ServiceDefaults\ServiceDefaults.csproj", "{845CBEE7-B168-43E5-ADEE-157123FD5570}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiGateway", "ApiGateway\ApiGateway.csproj", "{ABE66B30-BD47-A7B2-B17B-5BA67959B026}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AggregatorService", "AggregatorService\AggregatorService.csproj", "{118BABD1-1719-064E-189C-7604804884E4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -135,6 +143,22 @@ Global
 		{9F295737-5815-4B25-B4A2-869EEC4693BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F295737-5815-4B25-B4A2-869EEC4693BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9F295737-5815-4B25-B4A2-869EEC4693BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29EC42B1-1FB0-4CBE-A508-EB6B7002E798}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29EC42B1-1FB0-4CBE-A508-EB6B7002E798}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29EC42B1-1FB0-4CBE-A508-EB6B7002E798}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29EC42B1-1FB0-4CBE-A508-EB6B7002E798}.Release|Any CPU.Build.0 = Release|Any CPU
+		{845CBEE7-B168-43E5-ADEE-157123FD5570}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{845CBEE7-B168-43E5-ADEE-157123FD5570}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{845CBEE7-B168-43E5-ADEE-157123FD5570}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{845CBEE7-B168-43E5-ADEE-157123FD5570}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABE66B30-BD47-A7B2-B17B-5BA67959B026}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABE66B30-BD47-A7B2-B17B-5BA67959B026}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABE66B30-BD47-A7B2-B17B-5BA67959B026}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABE66B30-BD47-A7B2-B17B-5BA67959B026}.Release|Any CPU.Build.0 = Release|Any CPU
+		{118BABD1-1719-064E-189C-7604804884E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{118BABD1-1719-064E-189C-7604804884E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{118BABD1-1719-064E-189C-7604804884E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{118BABD1-1719-064E-189C-7604804884E4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

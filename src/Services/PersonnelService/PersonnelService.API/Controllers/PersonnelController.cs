@@ -1,122 +1,103 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using PersonnelService.Application.Interfaces;
-using PersonnelService.Core.DTOs;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using PersonnelService.Application.Common.Exceptions;
+using PersonnelService.Application.TodoPersonnel.Commands.CreatePersonnel;
+using PersonnelService.Application.TodoPersonnel.Commands.DeletePersonnel;
+using PersonnelService.Application.TodoPersonnel.Commands.UpdatePersonnel;
+using PersonnelService.Application.TodoPersonnel.Commands.UpdatePersonnelStatus;
+using PersonnelService.Application.TodoPersonnel.Queries.GetAllPersonnel;
+using PersonnelService.Application.TodoPersonnel.Queries.GetPersonnelById;
+using PersonnelService.Application.TodoPersonnel.Queries.GetPersonnelByPosition;
 
 namespace PersonnelService.API.Controllers
 {
+    [Route("api/personnel")]
     [ApiController]
-    [Route("api/[controller]")]
-    public class PersonnelController : ControllerBase
+    public class PersonnelController : ApiControllerBase
     {
-        private readonly IPersonnelService _personnelService;
+        public PersonnelController(IMediator mediator) : base(mediator) { }
 
-        public PersonnelController(IPersonnelService personnelService)
-        {
-            _personnelService = personnelService;
-        }
-
+        // GET: api/personnel
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<PersonnelDto>>> GetAll()
+        [ProducesResponseType(typeof(IEnumerable<object>), 200)]
+        public async Task<IActionResult> GetAll([FromQuery] GetAllPersonnelQuery query)
         {
-            var personnel = await _personnelService.GetAllPersonnelAsync();
-            return Ok(personnel);
+            var result = await Mediator.Send(query);
+            return Ok(result);
         }
 
+        // GET: api/personnel/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<PersonnelDto>> GetById(string id)
+        [ProducesResponseType(typeof(object), 200)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> GetById(string id)
         {
-            var personnel = await _personnelService.GetPersonnelByIdAsync(id);
-            if (personnel == null)
-                return NotFound();
-
-            return Ok(personnel);
+            var result = await Mediator.Send(new GetPersonnelByIdQuery(id));
+            return HandleResult(result);
         }
 
-        [HttpGet("by-personnel-id/{personnelId}")]
-        public async Task<ActionResult<PersonnelDto>> GetByPersonnelId(int personnelId)
+        // GET: api/personnel/position/{position}
+        [HttpGet("position/{position}")]
+        [ProducesResponseType(typeof(IEnumerable<object>), 200)]
+        public async Task<IActionResult> GetByPosition(string position)
         {
-            var personnel = await _personnelService.GetPersonnelByPersonnelIdAsync(personnelId);
-            if (personnel == null)
-                return NotFound();
-
-            return Ok(personnel);
+            var result = await Mediator.Send(new GetPersonnelByPositionQuery(position));
+            return Ok(result);
         }
 
-        [HttpGet("by-position/{position}")]
-        public async Task<ActionResult<IEnumerable<PersonnelDto>>> GetByPosition(string position)
-        {
-            var personnel = await _personnelService.GetPersonnelByPositionAsync(position);
-            return Ok(personnel);
-        }
-
-        [HttpGet("by-status/{status}")]
-        public async Task<ActionResult<IEnumerable<PersonnelDto>>> GetByStatus(string status)
-        {
-            var personnel = await _personnelService.GetPersonnelByStatusAsync(status);
-            return Ok(personnel);
-        }
-
-        [HttpGet("active")]
-        public async Task<ActionResult<IEnumerable<PersonnelDto>>> GetActive()
-        {
-            var personnel = await _personnelService.GetActivePersonnelAsync();
-            return Ok(personnel);
-        }
-
+        // POST: api/personnel
         [HttpPost]
-        public async Task<ActionResult<PersonnelDto>> Create([FromBody] CreatePersonnelDto createDto)
+        [ProducesResponseType(201)]
+        [ProducesResponseType(409)]
+        [ProducesResponseType(422)]
+        public async Task<IActionResult> Create([FromBody] CreatePersonnelCommand command)
         {
-            var created = await _personnelService.CreatePersonnelAsync(createDto);
-            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+            try
+            {
+                var id = await Mediator.Send(command);
+                return CreatedAtAction(nameof(GetById), new { id }, new { id });
+            }
+            catch (ConflictException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
+            catch (ValidationException ex)
+            {
+                return UnprocessableEntity(new { message = ex.Message });
+            }
         }
 
+        // PUT: api/personnel/{id}
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update(string id, [FromBody] UpdatePersonnelDto updateDto)
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(422)]
+        public async Task<IActionResult> Update(string id, [FromBody] UpdatePersonnelCommand command)
         {
-            var success = await _personnelService.UpdatePersonnelAsync(id, updateDto);
-            if (!success)
-                return NotFound();
-
-            return NoContent();
+            command.Id = id;
+            var result = await Mediator.Send(command);
+            return Ok(result);
         }
 
+        // PUT: api/personnel/{id}/status
+        [HttpPut("{id}/status")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(422)]
+        public async Task<IActionResult> UpdateStatus(string id, [FromBody] UpdatePersonnelStatusCommand command)
+        {
+            command.Id = id;
+            var result = await Mediator.Send(command);
+            return Ok(result);
+        }
+
+        // DELETE: api/personnel/{id}
         [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(string id)
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> Delete(string id)
         {
-            var success = await _personnelService.DeletePersonnelAsync(id);
-            if (!success)
-                return NotFound();
-
-            return NoContent();
-        }
-
-        [HttpPatch("{id}/status")]
-        public async Task<ActionResult> UpdateStatus(string id, [FromBody] string status)
-        {
-            var success = await _personnelService.UpdatePersonnelStatusAsync(id, status);
-            if (!success)
-                return NotFound();
-
-            return NoContent();
-        }
-
-        [HttpPatch("{id}/contacts")]
-        public async Task<ActionResult> UpdateContacts(string id, [FromBody] PersonnelContactsDto contactsDto)
-        {
-            var success = await _personnelService.UpdatePersonnelContactsAsync(id, contactsDto);
-            if (!success)
-                return NotFound();
-
-            return NoContent();
-        }
-
-        [HttpPost("{id}/documents")]
-        public async Task<ActionResult> AddDocument(string id, [FromBody] PersonnelDocumentInfoDto documentDto)
-        {
-            var success = await _personnelService.AddPersonnelDocumentAsync(id, documentDto);
-            if (!success)
-                return NotFound();
-
+            var result = await Mediator.Send(new DeletePersonnelCommand { Id = id });
             return NoContent();
         }
     }

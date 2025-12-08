@@ -1,35 +1,22 @@
 ﻿using MongoDB.Driver;
-using PersonnelService.Core.Interfaces;
-using PersonnelService.Core.Models;
-using PersonnelService.Infrastructure.Data;
+using PersonnelService.Domain.Entities;
+using PersonnelService.Domain.Interfaces;
+using PersonnelService.Infrastructure.Context;
 
 namespace PersonnelService.Infrastructure.Repositories
 {
-    public class ExaminationRepository : IExaminationRepository
+    public class ExaminationRepository : MongoRepository<PhysicalExamination>, IExaminationRepository
     {
-        private readonly IMongoCollection<PhysicalExamination> _collection;
-
         public ExaminationRepository(MongoDbContext context)
-        {
-            _collection = context.PhysicalExaminations;
-        }
+            : base(context.Examinations) { }
 
-        public async Task<IEnumerable<PhysicalExamination>> GetAllAsync()
+        public async Task<IReadOnlyCollection<PhysicalExamination>> GetByPersonnelIdAsync(int personnelId)
         {
-            return await _collection.Find(_ => true).ToListAsync();
-        }
-
-        public async Task<PhysicalExamination?> GetByIdAsync(string id)
-        {
-            return await _collection.Find(e => e.Id == id).FirstOrDefaultAsync();
-        }
-
-        public async Task<IEnumerable<PhysicalExamination>> GetByPersonnelIdAsync(int personnelId)
-        {
-            return await _collection
+            var list = await _collection
                 .Find(e => e.PersonnelId == personnelId)
                 .SortByDescending(e => e.ExamDate)
                 .ToListAsync();
+            return list.AsReadOnly();
         }
 
         public async Task<PhysicalExamination?> GetLatestByPersonnelIdAsync(int personnelId)
@@ -41,45 +28,41 @@ namespace PersonnelService.Infrastructure.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<IEnumerable<PhysicalExamination>> GetByResultAsync(string result)
+        public async Task<IReadOnlyCollection<PhysicalExamination>> GetByResultAsync(string result)
         {
-            return await _collection.Find(e => e.Result == result).ToListAsync();
+            var list = await _collection
+                .Find(e => e.Result == result)
+                .ToListAsync();
+            return list.AsReadOnly();
         }
 
-        public async Task<IEnumerable<PhysicalExamination>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
+        public async Task<IReadOnlyCollection<PhysicalExamination>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
         {
-            return await _collection
+            var list = await _collection
                 .Find(e => e.ExamDate >= startDate && e.ExamDate <= endDate)
                 .ToListAsync();
+            return list.AsReadOnly();
         }
 
-        public async Task<IEnumerable<PhysicalExamination>> GetByDoctorAsync(string doctorName)
+        public async Task<IReadOnlyCollection<PhysicalExamination>> GetByDoctorAsync(string doctorName)
         {
-            return await _collection.Find(e => e.DoctorName == doctorName).ToListAsync();
+            var list = await _collection
+                .Find(e => e.DoctorName == doctorName)
+                .ToListAsync();
+            return list.AsReadOnly();
         }
 
-        public async Task<PhysicalExamination> CreateAsync(PhysicalExamination examination)
+        public async Task<bool> HasValidExaminationAsync(int personnelId, int validityDays = 365)
         {
-            await _collection.InsertOneAsync(examination);
-            return examination;
-        }
+            var cutoffDate = DateTime.UtcNow.AddDays(-validityDays);
 
-        public async Task<bool> UpdateAsync(string id, PhysicalExamination examination)
-        {
-            var result = await _collection.ReplaceOneAsync(e => e.Id == id, examination);
-            return result.ModifiedCount > 0;
-        }
+            var count = await _collection
+                .CountDocumentsAsync(e =>
+                    e.PersonnelId == personnelId
+                    && e.ExamDate >= cutoffDate
+                    && e.Result == "Passed");
 
-        public async Task<bool> DeleteAsync(string id)
-        {
-            var result = await _collection.DeleteOneAsync(e => e.Id == id);
-            return result.DeletedCount > 0;
-        }
-
-        public async Task<bool> DeleteByPersonnelIdAsync(int personnelId)
-        {
-            var result = await _collection.DeleteManyAsync(e => e.PersonnelId == personnelId);
-            return result.DeletedCount > 0;
+            return count > 0;
         }
     }
 }

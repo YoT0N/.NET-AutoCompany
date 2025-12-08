@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using RoutingService.Core.DTOs;
+using RoutingService.Bll.DTOs.Common;
+using RoutingService.Bll.DTOs;
 
-namespace RoutingService.Application.Interfaces
+namespace RoutingService.Bll.Interfaces
 {
     public interface ITripService
     {
@@ -16,5 +17,7 @@ namespace RoutingService.Application.Interfaces
         Task<TripDto?> UpdateTripAsync(int id, UpdateTripDto dto);
         Task<bool> DeleteTripAsync(int id);
         Task<bool> MarkTripAsCompletedAsync(int id);
+
+        Task<PagedResultDto<TripDetailsDto>> GetTripsPagedAsync(TripFilterParameters parameters);
     }
 }

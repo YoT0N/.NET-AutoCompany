@@ -1,9 +1,9 @@
-﻿using TechnicalService.Application.Interfaces;
-using TechnicalService.Core.DTOs;
-using TechnicalService.Core.Entities;
-using TechnicalService.Core.Interfaces;
+﻿using TechnicalService.Dal.Interfaces;
+using TechnicalService.Bll.DTOs.Maintenance;
+using TechnicalService.Domain.Entities;
+using TechnicalService.Bll.Interfaces;
 
-namespace TechnicalService.Application.Services;
+namespace TechnicalService.Bll.Services;
 
 public class MaintenanceService : IMaintenanceService
 {
@@ -16,31 +16,31 @@ public class MaintenanceService : IMaintenanceService
 
     public async Task<IEnumerable<MaintenanceHistoryDto>> GetAllMaintenanceAsync()
     {
-        var maintenanceRecords = await _unitOfWork.Maintenance.GetAllAsync();
+        var maintenanceRecords = await _unitOfWork.Maintenances.GetAllAsync();
         return maintenanceRecords.Select(MapToDto);
     }
 
     public async Task<MaintenanceHistoryDto?> GetMaintenanceByIdAsync(long maintenanceId)
     {
-        var maintenance = await _unitOfWork.Maintenance.GetByIdAsync(maintenanceId);
+        var maintenance = await _unitOfWork.Maintenances.GetByIdAsync(maintenanceId);
         return maintenance != null ? MapToDto(maintenance) : null;
     }
 
     public async Task<IEnumerable<MaintenanceHistoryDto>> GetMaintenanceByBusAsync(string countryNumber)
     {
-        var maintenanceRecords = await _unitOfWork.Maintenance.GetMaintenanceByBusAsync(countryNumber);
+        var maintenanceRecords = await _unitOfWork.Maintenances.GetMaintenanceByBusAsync(countryNumber);
         return maintenanceRecords.Select(MapToDto);
     }
 
     public async Task<IEnumerable<MaintenanceHistoryDto>> GetUpcomingMaintenanceAsync(DateTime fromDate)
     {
-        var maintenanceRecords = await _unitOfWork.Maintenance.GetUpcomingMaintenanceAsync(fromDate);
+        var maintenanceRecords = await _unitOfWork.Maintenances.GetUpcomingMaintenanceAsync(fromDate);
         return maintenanceRecords.Select(MapToDto);
     }
 
     public async Task<decimal> GetTotalMaintenanceCostAsync(string countryNumber)
     {
-        return await _unitOfWork.Maintenance.GetTotalMaintenanceCostAsync(countryNumber);
+        return await _unitOfWork.Maintenances.GetTotalMaintenanceCostAsync(countryNumber);
     }
 
     public async Task<int> CreateMaintenanceAsync(CreateMaintenanceDto createMaintenanceDto)
@@ -56,12 +56,12 @@ public class MaintenanceService : IMaintenanceService
             NextMaintenanceDate = createMaintenanceDto.NextMaintenanceDate
         };
 
-        return await _unitOfWork.Maintenance.AddAsync(maintenance);
+        return await _unitOfWork.Maintenances.AddAsync(maintenance);
     }
 
     public async Task<int> UpdateMaintenanceAsync(long maintenanceId, CreateMaintenanceDto updateMaintenanceDto)
     {
-        var existingMaintenance = await _unitOfWork.Maintenance.GetByIdAsync(maintenanceId);
+        var existingMaintenance = await _unitOfWork.Maintenances.GetByIdAsync(maintenanceId);
         if (existingMaintenance == null)
         {
             return 0;
@@ -74,12 +74,12 @@ public class MaintenanceService : IMaintenanceService
         existingMaintenance.MechanicName = updateMaintenanceDto.MechanicName;
         existingMaintenance.NextMaintenanceDate = updateMaintenanceDto.NextMaintenanceDate;
 
-        return await _unitOfWork.Maintenance.UpdateAsync(existingMaintenance);
+        return await _unitOfWork.Maintenances.UpdateAsync(existingMaintenance);
     }
 
     public async Task<int> DeleteMaintenanceAsync(long maintenanceId)
     {
-        return await _unitOfWork.Maintenance.DeleteAsync(maintenanceId);
+        return await _unitOfWork.Maintenances.DeleteAsync(maintenanceId);
     }
 
     private static MaintenanceHistoryDto MapToDto(BusMaintenanceHistory maintenance)

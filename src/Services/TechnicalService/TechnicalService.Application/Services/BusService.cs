@@ -1,140 +1,215 @@
-﻿using TechnicalService.Application.Interfaces;
-using TechnicalService.Core.DTOs;
-using TechnicalService.Core.Entities;
-using TechnicalService.Core.Interfaces;
+﻿using AutoMapper;
+using TechnicalService.Bll.DTOs.Bus;
+using TechnicalService.Bll.Interfaces;
+using TechnicalService.Dal.Interfaces;
+using TechnicalService.Domain.Entities;
+using TechnicalService.Domain.Exceptions;
+using Microsoft.Extensions.Logging;
 
-namespace TechnicalService.Application.Services;
+namespace TechnicalService.Bll.Services;
 
 public class BusService : IBusService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
+    private readonly ILogger<BusService> _logger;
 
-    public BusService(IUnitOfWork unitOfWork)
+    public BusService(
+        IUnitOfWork unitOfWork,
+        IMapper mapper,
+        ILogger<BusService> logger)
     {
         _unitOfWork = unitOfWork;
+        _mapper = mapper;
+        _logger = logger;
     }
 
-    public async Task<IEnumerable<BusDto>> GetAllBusesAsync()
+    public async Task<IEnumerable<BusDto>> GetAllBusesAsync(CancellationToken cancellationToken = default)
     {
-        var buses = await _unitOfWork.Buses.GetAllAsync();
-        return buses.Select(MapToDto);
+        _logger.LogInformation("Отримання всіх автобусів");
+
+        var buses = await _unitOfWork.Buses.GetAllAsync(cancellationToken);
+        return _mapper.Map<IEnumerable<BusDto>>(buses);
     }
 
-    public async Task<BusDto?> GetBusByCountryNumberAsync(string countryNumber)
+    public async Task<BusDto> GetBusByCountryNumberAsync(
+        string countryNumber,
+        CancellationToken cancellationToken = default)
     {
-        var bus = await _unitOfWork.Buses.GetByIdAsync(countryNumber);
-        return bus != null ? MapToDto(bus) : null;
-    }
+        _logger.LogInformation("Отримання автобуса з номером {CountryNumber}", countryNumber);
 
-    public async Task<BusDto?> GetBusWithStatusAsync(string countryNumber)
-    {
-        var bus = await _unitOfWork.Buses.GetBusWithStatusAsync(countryNumber);
-        return bus != null ? MapToDtoWithStatus(bus) : null;
-    }
+        var bus = await _unitOfWork.Buses.GetByIdAsync(countryNumber, cancellationToken);
 
-    public async Task<IEnumerable<BusDto>> GetBusesByStatusAsync(int statusId)
-    {
-        var buses = await _unitOfWork.Buses.GetBusesByStatusAsync(statusId);
-        return buses.Select(MapToDto);
-    }
-
-    public async Task<IEnumerable<BusDto>> GetActiveBusesAsync()
-    {
-        var buses = await _unitOfWork.Buses.GetActiveBusesAsync();
-        return buses.Select(MapToDtoWithStatus);
-    }
-
-    public async Task<int> CreateBusAsync(CreateBusDto createBusDto)
-    {
-        var bus = new Bus
+        if (bus == null)
         {
-            CountryNumber = createBusDto.CountryNumber,
-            BoardingNumber = createBusDto.BoardingNumber,
-            Brand = createBusDto.Brand,
-            PassengerCapacity = createBusDto.PassengerCapacity,
-            YearOfManufacture = createBusDto.YearOfManufacture,
-            Mileage = createBusDto.Mileage,
-            DateOfReceipt = createBusDto.DateOfReceipt,
-            CurrentStatusId = createBusDto.CurrentStatusId
-        };
-
-        return await _unitOfWork.Buses.AddAsync(bus);
-    }
-
-    public async Task<int> UpdateBusAsync(string countryNumber, UpdateBusDto updateBusDto)
-    {
-        var existingBus = await _unitOfWork.Buses.GetByIdAsync(countryNumber);
-        if (existingBus == null)
-        {
-            return 0;
+            throw new NotFoundException("Bus", countryNumber);
         }
 
-        if (updateBusDto.BoardingNumber != null)
-            existingBus.BoardingNumber = updateBusDto.BoardingNumber;
-
-        if (updateBusDto.Brand != null)
-            existingBus.Brand = updateBusDto.Brand;
-
-        if (updateBusDto.PassengerCapacity.HasValue)
-            existingBus.PassengerCapacity = updateBusDto.PassengerCapacity.Value;
-
-        if (updateBusDto.Mileage.HasValue)
-            existingBus.Mileage = updateBusDto.Mileage.Value;
-
-        if (updateBusDto.CurrentStatusId.HasValue)
-            existingBus.CurrentStatusId = updateBusDto.CurrentStatusId.Value;
-
-        if (updateBusDto.WriteoffDate.HasValue)
-            existingBus.WriteoffDate = updateBusDto.WriteoffDate;
-
-        return await _unitOfWork.Buses.UpdateAsync(existingBus);
+        return _mapper.Map<BusDto>(bus);
     }
 
-    public async Task<int> DeleteBusAsync(string countryNumber)
+    public async Task<BusDto> GetBusWithStatusAsync(
+        string countryNumber,
+        CancellationToken cancellationToken = default)
     {
-        return await _unitOfWork.Buses.DeleteAsync(countryNumber);
-    }
+        _logger.LogInformation("Отримання автобуса зі статусом {CountryNumber}", countryNumber);
 
-    public async Task<int> UpdateBusStatusAsync(string countryNumber, int newStatusId)
-    {
-        return await _unitOfWork.Buses.UpdateBusStatusAsync(countryNumber, newStatusId);
-    }
+        var bus = await _unitOfWork.Buses.GetBusWithStatusAsync(countryNumber, cancellationToken);
 
-    public async Task<decimal> GetTotalMileageAsync(string countryNumber)
-    {
-        return await _unitOfWork.Buses.GetTotalMileageAsync(countryNumber);
-    }
-
-    private static BusDto MapToDto(Bus bus)
-    {
-        return new BusDto
+        if (bus == null)
         {
-            CountryNumber = bus.CountryNumber,
-            BoardingNumber = bus.BoardingNumber,
-            Brand = bus.Brand,
-            PassengerCapacity = bus.PassengerCapacity,
-            YearOfManufacture = bus.YearOfManufacture,
-            Mileage = bus.Mileage,
-            DateOfReceipt = bus.DateOfReceipt,
-            WriteoffDate = bus.WriteoffDate,
-            CurrentStatusId = bus.CurrentStatusId
-        };
+            throw new NotFoundException("Bus", countryNumber);
+        }
+
+        return _mapper.Map<BusDto>(bus);
     }
 
-    private static BusDto MapToDtoWithStatus(Bus bus)
+    public async Task<IEnumerable<BusDto>> GetBusesByStatusAsync(
+        int statusId,
+        CancellationToken cancellationToken = default)
     {
-        return new BusDto
+        _logger.LogInformation("Отримання автобусів зі статусом {StatusId}", statusId);
+
+        var buses = await _unitOfWork.Buses.GetBusesByStatusAsync(statusId, cancellationToken);
+        return _mapper.Map<IEnumerable<BusDto>>(buses);
+    }
+
+    public async Task<IEnumerable<BusDto>> GetActiveBusesAsync(CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Отримання активних автобусів");
+
+        var buses = await _unitOfWork.Buses.GetActiveBusesAsync(cancellationToken);
+        return _mapper.Map<IEnumerable<BusDto>>(buses);
+    }
+
+    public async Task<string> CreateBusAsync(
+        CreateBusDto createBusDto,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Створення нового автобуса {CountryNumber}", createBusDto.CountryNumber);
+
+        // Бізнес-валідація: перевірка унікальності номера
+        var existingBus = await _unitOfWork.Buses.GetByIdAsync(
+            createBusDto.CountryNumber,
+            cancellationToken);
+
+        if (existingBus != null)
         {
-            CountryNumber = bus.CountryNumber,
-            BoardingNumber = bus.BoardingNumber,
-            Brand = bus.Brand,
-            PassengerCapacity = bus.PassengerCapacity,
-            YearOfManufacture = bus.YearOfManufacture,
-            Mileage = bus.Mileage,
-            DateOfReceipt = bus.DateOfReceipt,
-            WriteoffDate = bus.WriteoffDate,
-            CurrentStatusId = bus.CurrentStatusId,
-            CurrentStatusName = bus.CurrentStatus?.StatusName
-        };
+            throw new BusinessConflictException(
+                $"Автобус з номером {createBusDto.CountryNumber} вже існує");
+        }
+
+        // Бізнес-валідація: рік випуску
+        if (createBusDto.YearOfManufacture > DateTime.UtcNow.Year)
+        {
+            throw new ValidationException(
+                nameof(createBusDto.YearOfManufacture),
+                "Рік випуску не може бути в майбутньому");
+        }
+
+        var bus = _mapper.Map<Bus>(createBusDto);
+        bus.CreatedAt = DateTime.UtcNow;
+        bus.UpdatedAt = DateTime.UtcNow;
+        bus.IsDeleted = false;
+
+        await _unitOfWork.Buses.AddAsync(bus, cancellationToken);
+        await _unitOfWork.CommitAsync(cancellationToken);
+
+        _logger.LogInformation("Автобус {CountryNumber} успішно створено", bus.CountryNumber);
+
+        return bus.CountryNumber;
+    }
+
+    public async Task UpdateBusAsync(
+        string countryNumber,
+        UpdateBusDto updateBusDto,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Оновлення автобуса {CountryNumber}", countryNumber);
+
+        var existingBus = await _unitOfWork.Buses.GetByIdAsync(countryNumber, cancellationToken);
+
+        if (existingBus == null)
+        {
+            throw new NotFoundException("Bus", countryNumber);
+        }
+
+        // Використання AutoMapper для оновлення
+        _mapper.Map(updateBusDto, existingBus);
+        existingBus.UpdatedAt = DateTime.UtcNow;
+
+        await _unitOfWork.Buses.UpdateAsync(existingBus, cancellationToken);
+        await _unitOfWork.CommitAsync(cancellationToken);
+
+        _logger.LogInformation("Автобус {CountryNumber} успішно оновлено", countryNumber);
+    }
+
+    public async Task DeleteBusAsync(string countryNumber, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Видалення автобуса {CountryNumber}", countryNumber);
+
+        var existingBus = await _unitOfWork.Buses.GetByIdAsync(countryNumber, cancellationToken);
+
+        if (existingBus == null)
+        {
+            throw new NotFoundException("Bus", countryNumber);
+        }
+
+        // Бізнес-правило: не можна видаляти автобус, який на ремонті
+        if (existingBus.CurrentStatusId == 3) // UnderRepair
+        {
+            throw new BusinessConflictException(
+                "Неможливо видалити автобус, який знаходиться на ремонті");
+        }
+
+        await _unitOfWork.Buses.DeleteAsync(countryNumber, cancellationToken);
+        await _unitOfWork.CommitAsync(cancellationToken);
+
+        _logger.LogInformation("Автобус {CountryNumber} успішно видалено", countryNumber);
+    }
+
+    public async Task UpdateBusStatusAsync(
+        string countryNumber,
+        int newStatusId,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation(
+            "Оновлення статусу автобуса {CountryNumber} на {StatusId}",
+            countryNumber,
+            newStatusId);
+
+        var existingBus = await _unitOfWork.Buses.GetByIdAsync(countryNumber, cancellationToken);
+
+        if (existingBus == null)
+        {
+            throw new NotFoundException("Bus", countryNumber);
+        }
+
+        // Бізнес-валідація статусів (приклад)
+        if (newStatusId < 1 || newStatusId > 5)
+        {
+            throw new ValidationException("newStatusId", "Невірний ідентифікатор статусу");
+        }
+
+        await _unitOfWork.Buses.UpdateBusStatusAsync(countryNumber, newStatusId, cancellationToken);
+        await _unitOfWork.CommitAsync(cancellationToken);
+
+        _logger.LogInformation("Статус автобуса {CountryNumber} успішно оновлено", countryNumber);
+    }
+
+    public async Task<decimal> GetTotalMileageAsync(
+        string countryNumber,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Отримання пробігу автобуса {CountryNumber}", countryNumber);
+
+        var bus = await _unitOfWork.Buses.GetByIdAsync(countryNumber, cancellationToken);
+
+        if (bus == null)
+        {
+            throw new NotFoundException("Bus", countryNumber);
+        }
+
+        return await _unitOfWork.Buses.GetTotalMileageAsync(countryNumber, cancellationToken);
     }
 }

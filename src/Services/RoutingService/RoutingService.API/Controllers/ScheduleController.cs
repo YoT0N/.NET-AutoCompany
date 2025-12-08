@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using RoutingService.Application.Interfaces;
-using RoutingService.Core.DTOs;
+using RoutingService.Bll.Interfaces;
+using RoutingService.Bll.DTOs;
 
 namespace RoutingService.API.Controllers
 {

@@ -1,130 +1,261 @@
-﻿using TechnicalService.Application.Interfaces;
-using TechnicalService.Core.DTOs;
-using TechnicalService.Core.Entities;
-using TechnicalService.Core.Interfaces;
+﻿using AutoMapper;
+using TechnicalService.Dal.Interfaces;
+using TechnicalService.Bll.DTOs.Examination;
+using TechnicalService.Domain.Entities;
+using TechnicalService.Domain.Exceptions;
+using TechnicalService.Bll.Interfaces;
 
-namespace TechnicalService.Application.Services;
+namespace TechnicalService.Bll.Services;
 
+/// Містить бізнес-логіку, валідацію та координацію транзакцій
 public class ExaminationService : IExaminationService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
 
-    public ExaminationService(IUnitOfWork unitOfWork)
+    public ExaminationService(IUnitOfWork unitOfWork, IMapper mapper)
     {
         _unitOfWork = unitOfWork;
+        _mapper = mapper;
     }
 
-    public async Task<IEnumerable<ExaminationDto>> GetAllExaminationsAsync()
+    public async Task<IEnumerable<ExaminationDto>> GetAllExaminationsAsync(
+        CancellationToken cancellationToken = default)
     {
-        var examinations = await _unitOfWork.Examinations.GetAllAsync();
-        return examinations.Select(MapToDto);
+        var examinations = await _unitOfWork.Examinations
+            .GetAllAsync(cancellationToken);
+
+        return _mapper.Map<IEnumerable<ExaminationDto>>(examinations);
     }
 
-    public async Task<ExaminationDto?> GetExaminationByIdAsync(long examinationId)
+    public async Task<ExaminationDto> GetExaminationByIdAsync(
+        long examinationId,
+        CancellationToken cancellationToken = default)
     {
-        var examination = await _unitOfWork.Examinations.GetByIdAsync(examinationId);
-        return examination != null ? MapToDto(examination) : null;
-    }
+        var examination = await _unitOfWork.Examinations
+            .GetByIdAsync(examinationId, cancellationToken);
 
-    public async Task<IEnumerable<ExaminationDto>> GetExaminationsByBusAsync(string countryNumber)
-    {
-        var examinations = await _unitOfWork.Examinations.GetExaminationsByBusAsync(countryNumber);
-        return examinations.Select(MapToDto);
-    }
-
-    public async Task<IEnumerable<ExaminationDto>> GetFailedExaminationsAsync()
-    {
-        var examinations = await _unitOfWork.Examinations.GetFailedExaminationsAsync();
-        return examinations.Select(MapToDto);
-    }
-
-    public async Task<ExaminationDto?> GetExaminationWithPartsAsync(long examinationId)
-    {
-        var examination = await _unitOfWork.Examinations.GetExaminationWithPartsAsync(examinationId);
-        return examination != null ? MapToDtoWithParts(examination) : null;
-    }
-
-    public async Task<long> CreateExaminationAsync(CreateExaminationDto createExaminationDto)
-    {
-        var examination = new TechnicalExamination
+        if (examination == null)
         {
-            BusCountryNumber = createExaminationDto.BusCountryNumber,
-            ExaminationDate = createExaminationDto.ExaminationDate,
-            ExaminationResult = createExaminationDto.ExaminationResult,
-            SentForRepair = createExaminationDto.SentForRepair,
-            RepairPrice = createExaminationDto.RepairPrice,
-            MechanicName = createExaminationDto.MechanicName,
-            Notes = createExaminationDto.Notes
-        };
-
-        var parts = createExaminationDto.RepairParts?.Select(p => new ExaminationRepairPart
-        {
-            PartId = p.PartId,
-            Quantity = p.Quantity
-        }).ToList() ?? new List<ExaminationRepairPart>();
-
-        return await _unitOfWork.Examinations.CreateExaminationWithPartsAsync(examination, parts);
-    }
-
-    public async Task<int> UpdateExaminationAsync(long examinationId, CreateExaminationDto updateExaminationDto)
-    {
-        var existingExamination = await _unitOfWork.Examinations.GetByIdAsync(examinationId);
-        if (existingExamination == null)
-        {
-            return 0;
+            throw new NotFoundException($"Examination with ID {examinationId} not found");
         }
 
-        existingExamination.ExaminationDate = updateExaminationDto.ExaminationDate;
-        existingExamination.ExaminationResult = updateExaminationDto.ExaminationResult;
-        existingExamination.SentForRepair = updateExaminationDto.SentForRepair;
-        existingExamination.RepairPrice = updateExaminationDto.RepairPrice;
-        existingExamination.MechanicName = updateExaminationDto.MechanicName;
-        existingExamination.Notes = updateExaminationDto.Notes;
-
-        return await _unitOfWork.Examinations.UpdateAsync(existingExamination);
+        return _mapper.Map<ExaminationDto>(examination);
     }
 
-    public async Task<int> DeleteExaminationAsync(long examinationId)
+    public async Task<IEnumerable<ExaminationDto>> GetExaminationsByBusAsync(
+        string countryNumber,
+        CancellationToken cancellationToken = default)
     {
-        return await _unitOfWork.Examinations.DeleteAsync(examinationId);
-    }
+        // Валідація: чи існує автобус
+        var bus = await _unitOfWork.Buses
+            .GetByIdAsync(countryNumber, cancellationToken);
 
-    private static ExaminationDto MapToDto(TechnicalExamination examination)
-    {
-        return new ExaminationDto
+        if (bus == null)
         {
-            ExaminationId = examination.ExaminationId,
-            BusCountryNumber = examination.BusCountryNumber,
-            ExaminationDate = examination.ExaminationDate,
-            ExaminationResult = examination.ExaminationResult,
-            SentForRepair = examination.SentForRepair,
-            RepairPrice = examination.RepairPrice,
-            MechanicName = examination.MechanicName,
-            Notes = examination.Notes,
-            RepairParts = new List<RepairPartDto>()
-        };
+            throw new NotFoundException($"Bus with country number {countryNumber} not found");
+        }
+
+        var examinations = await _unitOfWork.Examinations
+            .GetExaminationsByBusAsync(countryNumber, cancellationToken);
+
+        return _mapper.Map<IEnumerable<ExaminationDto>>(examinations);
     }
 
-    private static ExaminationDto MapToDtoWithParts(TechnicalExamination examination)
+    public async Task<IEnumerable<ExaminationDto>> GetFailedExaminationsAsync(
+        CancellationToken cancellationToken = default)
     {
-        return new ExaminationDto
+        var examinations = await _unitOfWork.Examinations
+            .GetFailedExaminationsAsync(cancellationToken);
+
+        return _mapper.Map<IEnumerable<ExaminationDto>>(examinations);
+    }
+
+    public async Task<ExaminationDto> GetExaminationWithPartsAsync(
+        long examinationId,
+        CancellationToken cancellationToken = default)
+    {
+        var examination = await _unitOfWork.Examinations
+            .GetExaminationWithPartsAsync(examinationId, cancellationToken);
+
+        if (examination == null)
         {
-            ExaminationId = examination.ExaminationId,
-            BusCountryNumber = examination.BusCountryNumber,
-            ExaminationDate = examination.ExaminationDate,
-            ExaminationResult = examination.ExaminationResult,
-            SentForRepair = examination.SentForRepair,
-            RepairPrice = examination.RepairPrice,
-            MechanicName = examination.MechanicName,
-            Notes = examination.Notes,
-            RepairParts = examination.RepairParts?.Select(rp => new RepairPartDto
+            throw new NotFoundException($"Examination with ID {examinationId} not found");
+        }
+
+        return _mapper.Map<ExaminationDto>(examination);
+    }
+
+    /// Створення огляду з запчастинами - ТРАНЗАКЦІЙНА ОПЕРАЦІЯ
+    /// Координує кілька операцій: створення огляду, додавання запчастин, оновлення статусу автобуса
+    public async Task<long> CreateExaminationAsync(
+        CreateExaminationDto dto,
+        CancellationToken cancellationToken = default)
+    {
+        // 1. ВАЛІДАЦІЯ: чи існує автобус
+        var bus = await _unitOfWork.Buses
+            .GetByIdAsync(dto.BusCountryNumber, cancellationToken);
+
+        if (bus == null)
+        {
+            throw new NotFoundException(
+                $"Bus with country number {dto.BusCountryNumber} not found");
+        }
+
+        // 2. ВАЛІДАЦІЯ: чи існують всі запчастини
+        if (dto.RepairParts?.Any() == true)
+        {
+            foreach (var partDto in dto.RepairParts)
             {
-                PartId = rp.PartId,
-                PartName = rp.Part?.PartName ?? string.Empty,
-                Quantity = rp.Quantity,
-                UnitPrice = rp.Part?.UnitPrice ?? 0,
-                TotalPrice = rp.Quantity * (rp.Part?.UnitPrice ?? 0)
-            }).ToList() ?? new List<RepairPartDto>()
-        };
+                var repairPart = await _unitOfWork.RepairParts
+                    .GetByIdAsync(partDto.PartId, cancellationToken);
+
+                if (repairPart == null)
+                {
+                    throw new NotFoundException(
+                        $"Repair part with ID {partDto.PartId} not found");
+                }
+
+                // БІЗНЕС-ПРАВИЛО: перевірка наявності запчастин на складі
+                if (repairPart.StockQuantity < partDto.Quantity)
+                {
+                    throw new BusinessConflictException(
+                        $"Insufficient stock for part '{repairPart.PartName}'. " +
+                        $"Available: {repairPart.StockQuantity}, Required: {partDto.Quantity}");
+                }
+            }
+        }
+
+        // 3. БІЗНЕС-ПРАВИЛО: розрахунок RepairPrice на основі запчастин
+        decimal calculatedRepairPrice = 0;
+        if (dto.RepairParts?.Any() == true)
+        {
+            foreach (var partDto in dto.RepairParts)
+            {
+                var repairPart = await _unitOfWork.RepairParts
+                    .GetByIdAsync(partDto.PartId, cancellationToken);
+
+                calculatedRepairPrice += (repairPart?.UnitPrice ?? 0) * partDto.Quantity;
+            }
+        }
+
+        // Якщо користувач не вказав ціну або вказав 0 - використовуємо розраховану
+        if (dto.RepairPrice == 0 && calculatedRepairPrice > 0)
+        {
+            dto.RepairPrice = calculatedRepairPrice;
+        }
+
+        // 4. ПОЧАТОК ТРАНЗАКЦІЇ
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+
+        try
+        {
+            var examination = _mapper.Map<TechnicalExamination>(dto);
+            var parts = _mapper.Map<List<ExaminationRepairPart>>(dto.RepairParts);
+
+            // 5. Створення огляду з запчастинами
+            var examinationId = await _unitOfWork.Examinations
+                .CreateExaminationWithPartsAsync(
+                    examination,
+                    parts,
+                    _unitOfWork.Connection!,
+                    _unitOfWork.Transaction!,
+                    cancellationToken);
+
+            // 6. Зменшення кількості запчастин на складі
+            if (dto.RepairParts?.Any() == true)
+            {
+                foreach (var partDto in dto.RepairParts)
+                {
+                    await _unitOfWork.RepairParts.UpdateStockQuantityAsync(
+                        partDto.PartId,
+                        -partDto.Quantity,  // ← Від'ємне значення = зменшення
+                        cancellationToken);
+                }
+            }
+
+            // 7. Оновлення статусу автобуса (якщо відправлений на ремонт)
+            if (dto.SentForRepair)
+            {
+                // Припустимо: StatusId = 3 означає "В ремонті"
+                // Це має бути в константах або конфігурації
+                const int InRepairStatusId = 3;
+
+                await _unitOfWork.Buses.UpdateBusStatusAsync(
+                    dto.BusCountryNumber,
+                    InRepairStatusId,
+                    cancellationToken);
+            }
+
+            // 8. COMMIT транзакції
+            await _unitOfWork.CommitAsync(cancellationToken);
+
+            return examinationId;
+        }
+        catch
+        {
+            // 9. ROLLBACK при помилці
+            await _unitOfWork.RollbackAsync(cancellationToken);
+            throw;
+        }
+    }
+
+    public async Task<int> UpdateExaminationAsync(
+        long examinationId,
+        UpdateExaminationDto dto,
+        CancellationToken cancellationToken = default)
+    {
+        // 1. ВАЛІДАЦІЯ: чи існує огляд
+        var existingExamination = await _unitOfWork.Examinations
+            .GetByIdAsync(examinationId, cancellationToken);
+
+        if (existingExamination == null)
+        {
+            throw new NotFoundException($"Examination with ID {examinationId} not found");
+        }
+
+        // 2. ВАЛІДАЦІЯ: чи існує автобус (якщо змінюється)
+        if (dto.BusCountryNumber != existingExamination.BusCountryNumber)
+        {
+            var bus = await _unitOfWork.Buses
+                .GetByIdAsync(dto.BusCountryNumber, cancellationToken);
+
+            if (bus == null)
+            {
+                throw new NotFoundException(
+                    $"Bus with country number {dto.BusCountryNumber} not found");
+            }
+        }
+
+        // 3. Мапінг змін
+        _mapper.Map(dto, existingExamination);
+
+        // 4. Оновлення
+        return await _unitOfWork.Examinations
+            .UpdateAsync(existingExamination, cancellationToken);
+    }
+
+    public async Task<int> DeleteExaminationAsync(
+        long examinationId,
+        CancellationToken cancellationToken = default)
+    {
+        // ВАЛІДАЦІЯ: чи існує огляд
+        var examination = await _unitOfWork.Examinations
+            .GetByIdAsync(examinationId, cancellationToken);
+
+        if (examination == null)
+        {
+            throw new NotFoundException($"Examination with ID {examinationId} not found");
+        }
+
+        // БІЗНЕС-ПРАВИЛО: можна видалити тільки огляди старше 30 днів
+        if (examination.ExaminationDate > DateTime.UtcNow.AddDays(-30))
+        {
+            throw new BusinessConflictException(
+                "Cannot delete examination created within the last 30 days");
+        }
+
+        return await _unitOfWork.Examinations
+            .DeleteAsync(examinationId, cancellationToken);
     }
 }

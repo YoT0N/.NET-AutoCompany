@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using RoutingService.Infrastructure.Data;
+using RoutingService.Dal.Data;
 
 #nullable disable
 
-namespace RoutingService.Infrastructure.Migrations
+namespace RoutingService.Dal.Migrations
 {
     [DbContext(typeof(RoutingDbContext))]
     [Migration("20251125194953_InitialCreate")]

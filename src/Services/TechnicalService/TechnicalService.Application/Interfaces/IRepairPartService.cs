@@ -1,6 +1,6 @@
-﻿using TechnicalService.Core.Entities;
+﻿using TechnicalService.Domain.Entities;
 
-namespace TechnicalService.Application.Interfaces;
+namespace TechnicalService.Bll.Interfaces;
 
 public interface IRepairPartService
 {

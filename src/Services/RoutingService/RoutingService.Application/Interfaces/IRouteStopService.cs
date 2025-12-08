@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using RoutingService.Core.DTOs;
+using RoutingService.Bll.DTOs.Common;
+using RoutingService.Bll.DTOs;
 
-namespace RoutingService.Application.Interfaces
+namespace RoutingService.Bll.Interfaces
 {
     public interface IRouteStopService
     {
@@ -14,5 +15,7 @@ namespace RoutingService.Application.Interfaces
         Task<bool> AssignStopToRouteAsync(AssignStopToRouteDto dto);
         Task<bool> RemoveStopFromRouteAsync(int routeId, int stopId);
         Task<IEnumerable<RouteStopInfoDto>> GetStopsByRouteAsync(int routeId);
+
+        Task<PagedResultDto<RouteStopDto>> GetStopsPagedAsync(RouteStopFilterParameters parameters);
     }
 }

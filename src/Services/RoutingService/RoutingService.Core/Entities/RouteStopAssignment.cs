@@ -1,4 +1,4 @@
-﻿namespace RoutingService.Core.Entities
+﻿namespace RoutingService.Domain.Entities
 {
     public class RouteStopAssignment
     {

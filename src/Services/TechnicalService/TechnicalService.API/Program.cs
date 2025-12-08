@@ -1,23 +1,24 @@
-using TechnicalService.Application.Interfaces;
-using TechnicalService.Application.Services;
-using TechnicalService.Core.Interfaces;
-using TechnicalService.Infrastructure.Data;
-using TechnicalService.Infrastructure.Repositories;
+using TechnicalService.Api.Extensions;
+using TechnicalService.Api.Middleware;
+using ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Додаємо ServiceDefaults
+builder.AddServiceDefaults();
+
+// Додаємо HttpContextAccessor
+builder.Services.AddHttpContextAccessor();
+
+// Реєстрація сервісів
+builder.Services.AddApplicationServices(builder.Configuration);
+
+// Додаємо контролери
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<DapperContext>();
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-builder.Services.AddScoped<IBusService, BusService>();
-builder.Services.AddScoped<IExaminationService, ExaminationService>();
-builder.Services.AddScoped<IMaintenanceService, MaintenanceService>();
-builder.Services.AddScoped<IRepairPartService, RepairPartService>();
-
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -30,15 +31,24 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-/*if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-}*/
+}
+
+// Middleware для обробки винятків
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+// CorrelationId middleware
+app.UseCorrelationId();
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthorization();
 app.MapControllers();
+
+// Мапимо health check endpoints
+app.MapDefaultEndpoints();
 
 app.Run();

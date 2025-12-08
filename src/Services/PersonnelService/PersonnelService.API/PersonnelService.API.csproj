@@ -7,11 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DotSwashbuckle.AspNetCore.SwaggerGen" Version="3.0.11" />
-    <PackageReference Include="DotSwashbuckle.AspNetCore.SwaggerUI" Version="3.0.11" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\PersonnelService.Application\PersonnelService.Application.csproj" />
 		<ProjectReference Include="..\PersonnelService.Infrastructure\PersonnelService.Infrastructure.csproj" />
+		<ProjectReference Include="..\..\..\..\ServiceDefaults\ServiceDefaults.csproj" />
 	</ItemGroup>
 </Project>
