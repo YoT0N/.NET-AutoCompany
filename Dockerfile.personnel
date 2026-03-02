@@ -2,11 +2,12 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /repo
 
+COPY nuget.config ./
 COPY ServiceDefaults/ServiceDefaults.csproj                                                            ServiceDefaults/
 COPY src/Services/PersonnelService/PersonnelService.API/PersonnelService.API.csproj                    src/Services/PersonnelService/PersonnelService.API/
 COPY src/Services/PersonnelService/PersonnelService.Application/PersonnelService.Application.csproj    src/Services/PersonnelService/PersonnelService.Application/
 COPY src/Services/PersonnelService/PersonnelService.Infrastructure/PersonnelService.Infrastructure.csproj src/Services/PersonnelService/PersonnelService.Infrastructure/
-COPY src/Services/PersonnelService/PersonnelService.Core/PersonnelService.Domain.csproj              src/Services/PersonnelService/PersonnelService.Core/
+COPY src/Services/PersonnelService/PersonnelService.Core/PersonnelService.Domain.csproj                src/Services/PersonnelService/PersonnelService.Core/
 
 RUN dotnet restore src/Services/PersonnelService/PersonnelService.API/PersonnelService.API.csproj
 
@@ -14,7 +15,8 @@ COPY ServiceDefaults/          ServiceDefaults/
 COPY src/Services/PersonnelService/  src/Services/PersonnelService/
 
 RUN dotnet publish src/Services/PersonnelService/PersonnelService.API/PersonnelService.API.csproj \
-    -c Release -o /app/publish --no-restore
+    -c Release -o /app/publish --no-restore \
+    -p:IsTransformWebConfigDisabled=true
 
 # ─── Stage 2: Runtime ─────────────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime

@@ -2,6 +2,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /repo
 
+COPY nuget.config ./
 COPY ServiceDefaults/ServiceDefaults.csproj  ServiceDefaults/
 COPY ApiGateway/ApiGateway.csproj            ApiGateway/
 
@@ -11,7 +12,8 @@ COPY ServiceDefaults/  ServiceDefaults/
 COPY ApiGateway/       ApiGateway/
 
 RUN dotnet publish ApiGateway/ApiGateway.csproj \
-    -c Release -o /app/publish --no-restore
+    -c Release -o /app/publish --no-restore \
+    -p:IsTransformWebConfigDisabled=true
 
 # ─── Stage 2: Runtime ─────────────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime

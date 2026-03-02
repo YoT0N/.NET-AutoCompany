@@ -2,6 +2,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /repo
 
+COPY nuget.config ./
 COPY ServiceDefaults/ServiceDefaults.csproj   ServiceDefaults/
 COPY AggregatorService/AggregatorService.csproj  AggregatorService/
 
@@ -11,7 +12,8 @@ COPY ServiceDefaults/    ServiceDefaults/
 COPY AggregatorService/  AggregatorService/
 
 RUN dotnet publish AggregatorService/AggregatorService.csproj \
-    -c Release -o /app/publish --no-restore
+    -c Release -o /app/publish --no-restore \
+    -p:IsTransformWebConfigDisabled=true
 
 # ─── Stage 2: Runtime ─────────────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime

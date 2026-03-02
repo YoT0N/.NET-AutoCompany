@@ -2,7 +2,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /repo
 
-# Копіюємо всі csproj файли і відновлюємо залежності (кешування шарів)
+COPY nuget.config ./
 COPY ServiceDefaults/ServiceDefaults.csproj                                             ServiceDefaults/
 COPY src/Services/TechnicalService/TechnicalService.API/TechnicalService.API.csproj     src/Services/TechnicalService/TechnicalService.API/
 COPY src/Services/TechnicalService/TechnicalService.Application/TechnicalService.Bll.csproj  src/Services/TechnicalService/TechnicalService.Application/
@@ -11,12 +11,13 @@ COPY src/Services/TechnicalService/TechnicalService.Core/TechnicalService.Domain
 
 RUN dotnet restore src/Services/TechnicalService/TechnicalService.API/TechnicalService.API.csproj
 
-# Копіюємо весь вихідний код і публікуємо
 COPY ServiceDefaults/    ServiceDefaults/
 COPY src/Services/TechnicalService/  src/Services/TechnicalService/
 
 RUN dotnet publish src/Services/TechnicalService/TechnicalService.API/TechnicalService.API.csproj \
-    -c Release -o /app/publish --no-restore
+    -c Release -o /app/publish --no-restore \
+    -p:IsTransformWebConfigDisabled=true && \
+    ls /app/publish/*.dll
 
 # ─── Stage 2: Runtime ─────────────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
@@ -28,4 +29,4 @@ ENV ASPNETCORE_ENVIRONMENT=Production
 ENV ASPNETCORE_URLS=http://+:8080
 
 EXPOSE 8080
-ENTRYPOINT ["dotnet", "TechnicalService.Api.dll"]
+ENTRYPOINT ["dotnet", "TechnicalService.API.dll"]
