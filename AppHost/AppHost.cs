@@ -64,4 +64,6 @@ var gateway = builder.AddProject<Projects.ApiGateway>("gateway")
     .WithReference(aggregator)
     .WaitFor(aggregator);
 
-builder.Build().Run();
+var app = builder.Build();
+
+await app.RunAsync();

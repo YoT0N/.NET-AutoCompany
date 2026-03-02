@@ -1,0 +1,172 @@
+﻿version: '3.9'
+
+# ──────────────────────────────────────────────
+#  Мережі
+# ──────────────────────────────────────────────
+networks:
+  transport-net:
+    driver: bridge
+
+# ──────────────────────────────────────────────
+#  Volumes (persistent storage)
+# ──────────────────────────────────────────────
+volumes:
+  mysql-technical-data:
+  mysql-routing-data:
+  mongo-personnel-data:
+
+# ──────────────────────────────────────────────
+#  Сервіси
+# ──────────────────────────────────────────────
+services:
+
+  # ── Бази даних ──────────────────────────────
+
+  mysql-technical:
+    image: mysql:8.0
+    container_name: mysql-technical
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: windowcloud
+      MYSQL_DATABASE: transportservicedb
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-technical-data:/var/lib/mysql
+    networks:
+      - transport-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pwindowcloud"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mysql-routing:
+    image: mysql:8.0
+    container_name: mysql-routing
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: windowcloud
+      MYSQL_DATABASE: routesdb
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql-routing-data:/var/lib/mysql
+    networks:
+      - transport-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pwindowcloud"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongo-personnel:
+    image: mongo:7.0
+    container_name: mongo-personnel
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-personnel-data:/data/db
+    networks:
+      - transport-net
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Мікросервіси ────────────────────────────
+
+  technicalservice-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.technical
+    container_name: technicalservice-api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "Server=mysql-technical;Port=3306;Database=transportservicedb;User=root;Password=windowcloud;"
+    ports:
+      - "5108:8080"
+    networks:
+      - transport-net
+    depends_on:
+      mysql-technical:
+        condition: service_healthy
+
+  routing-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.routing
+    container_name: routing-api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "Server=mysql-routing;Port=3306;Database=routesdb;User=root;Password=windowcloud;"
+    ports:
+      - "5062:8080"
+    networks:
+      - transport-net
+    depends_on:
+      mysql-routing:
+        condition: service_healthy
+
+  personnel-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.personnel
+    container_name: personnel-api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__MongoDb: "mongodb://mongo-personnel:27017"
+      MongoDB__DatabaseName: PersonnelServiceDb
+    ports:
+      - "5241:8080"
+    networks:
+      - transport-net
+    depends_on:
+      mongo-personnel:
+        condition: service_healthy
+
+  aggregator:
+    build:
+      context: .
+      dockerfile: Dockerfile.aggregator
+    container_name: aggregator
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      # Адреси сервісів через імена контейнерів у Docker-мережі
+      services__technicalservice-api__http__0: "http://technicalservice-api:8080"
+      services__routing-api__http__0: "http://routing-api:8080"
+      services__personnel-api__http__0: "http://personnel-api:8080"
+    ports:
+      - "5050:8080"
+    networks:
+      - transport-net
+    depends_on:
+      - technicalservice-api
+      - routing-api
+      - personnel-api
+
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    container_name: gateway
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      # Перевизначаємо адреси кластерів YARP через env-змінні
+      ReverseProxy__Clusters__technical-cluster__Destinations__destination1__Address: "http://technicalservice-api:8080"
+      ReverseProxy__Clusters__routing-cluster__Destinations__destination1__Address: "http://routing-api:8080"
+      ReverseProxy__Clusters__personnel-cluster__Destinations__destination1__Address: "http://personnel-api:8080"
+      ReverseProxy__Clusters__aggregator-cluster__Destinations__destination1__Address: "http://aggregator:8080"
+    ports:
+      - "5000:8080"
+    networks:
+      - transport-net
+    depends_on:
+      - aggregator
