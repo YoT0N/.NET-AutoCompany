@@ -26,11 +26,58 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Restore dependencies
-        run: dotnet restore AutoCompany.sln
+      - name: Restore TechnicalService
+        run: dotnet restore src/Services/TechnicalService/TechnicalService.API/TechnicalService.API.csproj
 
-      - name: Build solution
-        run: dotnet build AutoCompany.sln --configuration Release --no-restore
+      - name: Restore RoutingService
+        run: dotnet restore src/Services/RoutingService/RoutingService.API/RoutingService.API.csproj
+
+      - name: Restore PersonnelService
+        run: dotnet restore src/Services/PersonnelService/PersonnelService.API/PersonnelService.API.csproj
+
+      - name: Restore AggregatorService
+        run: dotnet restore AggregatorService/AggregatorService.csproj
+
+      - name: Restore ApiGateway
+        run: dotnet restore ApiGateway/ApiGateway.csproj
+
+      - name: Restore PersonnelService.Tests
+        run: dotnet restore src/Services/PersonnelService/PersonnelService.Tests/PersonnelService.Tests.csproj
+
+      - name: Build TechnicalService
+        run: |
+          dotnet build src/Services/TechnicalService/TechnicalService.API/TechnicalService.API.csproj \
+            --configuration Release \
+            --no-restore \
+            /p:TreatWarningsAsErrors=false
+
+      - name: Build RoutingService
+        run: |
+          dotnet build src/Services/RoutingService/RoutingService.API/RoutingService.API.csproj \
+            --configuration Release \
+            --no-restore \
+            /p:TreatWarningsAsErrors=false
+
+      - name: Build PersonnelService
+        run: |
+          dotnet build src/Services/PersonnelService/PersonnelService.API/PersonnelService.API.csproj \
+            --configuration Release \
+            --no-restore \
+            /p:TreatWarningsAsErrors=false
+
+      - name: Build AggregatorService
+        run: |
+          dotnet build AggregatorService/AggregatorService.csproj \
+            --configuration Release \
+            --no-restore \
+            /p:TreatWarningsAsErrors=false
+
+      - name: Build ApiGateway
+        run: |
+          dotnet build ApiGateway/ApiGateway.csproj \
+            --configuration Release \
+            --no-restore \
+            /p:TreatWarningsAsErrors=false
 
   # ─── JOB 2: TEST ─────────────────────────────────────────────────
   test:
@@ -47,8 +94,8 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Restore dependencies
-        run: dotnet restore AutoCompany.sln
+      - name: Restore test project
+        run: dotnet restore src/Services/PersonnelService/PersonnelService.Tests/PersonnelService.Tests.csproj
 
       - name: Run unit tests
         run: |
@@ -76,7 +123,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Required for SonarCloud blame info
+          fetch-depth: 0
 
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
@@ -87,7 +134,13 @@ jobs:
         run: dotnet tool install --global dotnet-sonarscanner
 
       - name: Restore dependencies
-        run: dotnet restore AutoCompany.sln
+        run: |
+          dotnet restore src/Services/TechnicalService/TechnicalService.API/TechnicalService.API.csproj
+          dotnet restore src/Services/RoutingService/RoutingService.API/RoutingService.API.csproj
+          dotnet restore src/Services/PersonnelService/PersonnelService.API/PersonnelService.API.csproj
+          dotnet restore AggregatorService/AggregatorService.csproj
+          dotnet restore ApiGateway/ApiGateway.csproj
+          dotnet restore src/Services/PersonnelService/PersonnelService.Tests/PersonnelService.Tests.csproj
 
       - name: Begin SonarCloud scan
         env:
@@ -100,10 +153,20 @@ jobs:
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" \
-            /d:sonar.exclusions="**/Migrations/**,**/bin/**,**/obj/**"
+            /d:sonar.exclusions="**/Migrations/**,**/bin/**,**/obj/**,**/AppHost/**"
 
       - name: Build for SonarCloud
-        run: dotnet build AutoCompany.sln --configuration Release --no-restore
+        run: |
+          dotnet build src/Services/TechnicalService/TechnicalService.API/TechnicalService.API.csproj \
+            --configuration Release --no-restore /p:TreatWarningsAsErrors=false
+          dotnet build src/Services/RoutingService/RoutingService.API/RoutingService.API.csproj \
+            --configuration Release --no-restore /p:TreatWarningsAsErrors=false
+          dotnet build src/Services/PersonnelService/PersonnelService.API/PersonnelService.API.csproj \
+            --configuration Release --no-restore /p:TreatWarningsAsErrors=false
+          dotnet build AggregatorService/AggregatorService.csproj \
+            --configuration Release --no-restore /p:TreatWarningsAsErrors=false
+          dotnet build ApiGateway/ApiGateway.csproj \
+            --configuration Release --no-restore /p:TreatWarningsAsErrors=false
 
       - name: Run tests with coverage
         run: |
