@@ -143,7 +143,8 @@ public class ValueObjectTests
         bus1.Should().Be(bus2);
     }
 
-    // ─── RouteInfoVO ────────────────────────────────────────────────────────────
+    // ─── RouteInfoVO ────────────────────────────────────────────────────────────-
+    // Працює)
 
     [Fact]
     public void RouteInfoVO_ValidData_CreatesSuccessfully()

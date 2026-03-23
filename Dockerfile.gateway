@@ -1,4 +1,4 @@
-﻿# ─── Stage 1: Build ───────────────────────────────────────────────
+﻿# ───  1: Build ───────────────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /repo
 
@@ -15,7 +15,7 @@ RUN dotnet publish ApiGateway/ApiGateway.csproj \
     -c Release -o /app/publish --no-restore \
     -p:IsTransformWebConfigDisabled=true
 
-# ─── Stage 2: Runtime ─────────────────────────────────────────────
+# ───  2: Runtime ─────────────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 
