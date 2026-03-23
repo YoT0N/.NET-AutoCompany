@@ -13,6 +13,7 @@
             return GetEqualityComponents().SequenceEqual(other.GetEqualityComponents());
         }
 
+        //lf
         public override int GetHashCode()
         {
             return GetEqualityComponents()
