@@ -1,0 +1,68 @@
+﻿# ── Global ──────────────────────────────────────────────────────────
+replicaCount: 1
+
+# ── Services ─────────────────────────────────────────────────────────
+services:
+  technicalservice:
+    image:
+      repository: technicalservice-api
+      tag: latest
+      pullPolicy: Never
+    port: 8080
+    env:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ASPNETCORE_URLS: "http://+:8080"
+      ConnectionStrings__DefaultConnection: "Server=mysql-technical-autocompany;Port=3306;Database=transportservicedb;User=root;Password=windowcloud;"
+
+  routingservice:
+    image:
+      repository: routing-api
+      tag: latest
+      pullPolicy: Never
+    port: 8080
+    env:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ASPNETCORE_URLS: "http://+:8080"
+      ConnectionStrings__DefaultConnection: "Server=mysql-routing-autocompany;Port=3306;Database=routesdb;User=root;Password=windowcloud;"
+      ConnectionStrings__redis: "redis-autocompany-master:6379"
+
+  personnelservice:
+    image:
+      repository: personnel-api
+      tag: latest
+      pullPolicy: Never
+    port: 8080
+    env:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ASPNETCORE_URLS: "http://+:8080"
+      ConnectionStrings__MongoDb: "mongodb://mongo-personnel-autocompany:27017"
+      MongoDB__DatabaseName: "PersonnelServiceDb"
+
+  aggregator:
+    image:
+      repository: aggregator
+      tag: latest
+      pullPolicy: Never
+    port: 8080
+    env:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ASPNETCORE_URLS: "http://+:8080"
+      services__technicalservice-api__http__0: "http://technicalservice-api:80"
+      services__routing-api__http__0: "http://routing-api:80"
+      services__personnel-api__http__0: "http://personnel-api:80"
+      ConnectionStrings__redis: "redis-autocompany-master:6379"
+
+  gateway:
+    image:
+      repository: gateway
+      tag: latest
+      pullPolicy: Never
+    port: 8080
+    serviceType: NodePort
+    env:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ASPNETCORE_URLS: "http://+:8080"
+      ReverseProxy__Clusters__technical-cluster__Destinations__destination1__Address: "http://technicalservice-api:80"
+      ReverseProxy__Clusters__routing-cluster__Destinations__destination1__Address: "http://routing-api:80"
+      ReverseProxy__Clusters__personnel-cluster__Destinations__destination1__Address: "http://personnel-api:80"
+      ReverseProxy__Clusters__aggregator-cluster__Destinations__destination1__Address: "http://aggregator:80"

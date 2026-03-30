@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aggregator
+  labels:
+    app: aggregator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aggregator
+  template:
+    metadata:
+      labels:
+        app: aggregator
+    spec:
+      containers:
+        - name: aggregator
+          image: aggregator:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "Production"
+            - name: ASPNETCORE_URLS
+              value: "http://+:8080"
+            - name: services__technicalservice-api__http__0
+              value: "http://technicalservice-api:80"
+            - name: services__routing-api__http__0
+              value: "http://routing-api:80"
+            - name: services__personnel-api__http__0
+              value: "http://personnel-api:80"
+            - name: ConnectionStrings__redis
+              value: "redis:6379"
+          readinessProbe:
+            httpGet:
+              path: /api/aggregator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: /api/aggregator/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aggregator
+spec:
+  selector:
+    app: aggregator
+  ports:
+    - port: 80
+      targetPort: 8080
+  type: ClusterIP

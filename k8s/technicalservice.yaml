@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: technicalservice-api
+  labels:
+    app: technicalservice-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: technicalservice-api
+  template:
+    metadata:
+      labels:
+        app: technicalservice-api
+    spec:
+      containers:
+        - name: technicalservice-api
+          image: technicalservice-api:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "Production"
+            - name: ASPNETCORE_URLS
+              value: "http://+:8080"
+            - name: ConnectionStrings__DefaultConnection
+              value: "Server=mysql-technical;Port=3306;Database=transportservicedb;User=root;Password=windowcloud;"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: technicalservice-api
+spec:
+  selector:
+    app: technicalservice-api
+  ports:
+    - port: 80
+      targetPort: 8080
+  type: ClusterIP
