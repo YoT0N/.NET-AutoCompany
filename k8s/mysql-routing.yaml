@@ -24,6 +24,8 @@ spec:
               value: "windowcloud"
             - name: MYSQL_DATABASE
               value: "routesdb"
+            - name: MYSQL_ROOT_HOST
+              value: "%"
           readinessProbe:
             exec:
               command: ["mysqladmin", "ping", "-h", "localhost", "-pwindowcloud"]
