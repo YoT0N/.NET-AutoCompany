@@ -14,6 +14,17 @@ public class BusFullInfoDto
     public List<RouteSheetDto> RouteSheets { get; set; } = new();
 }
 
+public class RouteSheetDto
+{
+    public int SheetId { get; set; }
+    public int RouteId { get; set; }
+    public int BusId { get; set; }
+    public string SheetDate { get; set; } = string.Empty;
+    public string RouteNumber { get; set; } = string.Empty;
+    public string RouteName { get; set; } = string.Empty;
+    public string BusCountryNumber { get; set; } = string.Empty;
+}
+
 public class PersonnelFullInfoDto
 {
     public int PersonnelId { get; set; }

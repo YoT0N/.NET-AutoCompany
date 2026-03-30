@@ -1,42 +1,58 @@
 using AggregatorService.Clients;
 using AggregatorService.Services;
 using ServiceDefaults;
+using RoutingService.Grpc;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add ServiceDefaults (OpenTelemetry, Health Checks, Serilog)
 builder.AddServiceDefaults();
 
+// Add HttpContextAccessor for CorrelationId
 builder.Services.AddHttpContextAccessor();
 
-// Register Typed HttpClients with Service Discovery and CorrelationId propagation
-// ÂÀÆËÈÂÎ: AddHttpMessageHandler ìàº áóòè ÄÎ AddStandardResilienceHandler
+// Memory Cache (L1)
+builder.Services.AddMemoryCache();
+
+// Redis Distributed Cache (L2) - ÷åðåç Aspire
+builder.AddRedisClient("redis");
+
+// Äîäàºìî IDistributedCache ðåàë³çàö³þ ÷åðåç StackExchange.Redis
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    var redisConnectionString = builder.Configuration.GetConnectionString("redis");
+    if (!string.IsNullOrEmpty(redisConnectionString))
+    {
+        options.Configuration = redisConnectionString;
+    }
+});
+
+// Add services to the container
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// Register HttpClients with CorrelationIdDelegatingHandler
 builder.Services.AddHttpClient<TechnicalServiceClient>(client =>
 {
     client.BaseAddress = new Uri("http://technicalservice-api");
 })
-.AddHttpMessageHandler<CorrelationIdDelegatingHandler>()
-.AddStandardResilienceHandler();
-
-builder.Services.AddHttpClient<RoutingServiceClient>(client =>
-{
-    client.BaseAddress = new Uri("http://routing-api");
-})
-.AddHttpMessageHandler<CorrelationIdDelegatingHandler>()
-.AddStandardResilienceHandler();
+.AddHttpMessageHandler<CorrelationIdDelegatingHandler>();
 
 builder.Services.AddHttpClient<PersonnelServiceClient>(client =>
 {
     client.BaseAddress = new Uri("http://personnel-api");
 })
-.AddHttpMessageHandler<CorrelationIdDelegatingHandler>()
-.AddStandardResilienceHandler();
+.AddHttpMessageHandler<CorrelationIdDelegatingHandler>();
 
-// Register Aggregator Service
+builder.Services.AddGrpcClient<RoutingGrpcService.RoutingGrpcServiceClient>(options =>
+{
+    options.Address = new Uri("http://routing-api");
+});
+
+builder.Services.AddScoped<RoutingGrpcClient>();
+
 builder.Services.AddScoped<IAggregatorService, AggregatorService.Services.AggregatorService>();
-
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
@@ -47,6 +63,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCorrelationId();
+
+app.UseAuthorization();
+
 app.MapControllers();
 app.MapDefaultEndpoints();
 

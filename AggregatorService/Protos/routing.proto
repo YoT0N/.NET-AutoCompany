@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+option csharp_namespace = "RoutingService.Grpc";
+
+package routing;
+
+// Сервіс для роботи з маршрутами
+service RoutingGrpcService {
+  rpc GetRouteById (GetRouteByIdRequest) returns (RouteResponse);
+  rpc GetAllRoutes (GetAllRoutesRequest) returns (RoutesListResponse);
+  rpc GetRouteSheetsByBus (GetRouteSheetsByBusRequest) returns (RouteSheetsListResponse);
+}
+
+// Request messages
+message GetRouteByIdRequest {
+  int32 route_id = 1;
+}
+
+message GetAllRoutesRequest {
+}
+
+message GetRouteSheetsByBusRequest {
+  int32 bus_id = 1;
+}
+
+// Response messages
+message RouteResponse {
+  int32 route_id = 1;
+  string route_number = 2;
+  string name = 3;
+  double distance_km = 4;
+  string created_at = 5;
+  string updated_at = 6;
+}
+
+message RoutesListResponse {
+  repeated RouteResponse routes = 1;
+}
+
+message RouteSheetResponse {
+  int32 sheet_id = 1;
+  int32 route_id = 2;
+  int32 bus_id = 3;
+  string sheet_date = 4;
+  string route_number = 5;
+  string route_name = 6;
+  string bus_country_number = 7;
+}
+
+message RouteSheetsListResponse {
+  repeated RouteSheetResponse route_sheets = 1;
+}

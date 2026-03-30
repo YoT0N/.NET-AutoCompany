@@ -52,14 +52,20 @@ public static class Extensions
                 tracing
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
+                    .AddGrpcClientInstrumentation() // gRPC client tracing
+
                     .AddSqlClientInstrumentation(options =>
                     {
-                        options.SetDbStatementForText = true;
                         options.RecordException = true;
+                        options.EnableConnectionLevelAttributes = true;
                     });
 
                 // MongoDB instrumentation
                 tracing.AddSource("MongoDB.Driver.Core.Extensions.DiagnosticSources");
+
+                // gRPC server instrumentation
+                tracing.AddSource("Grpc.Net.Client");
+                tracing.AddSource("Grpc.AspNetCore.Server");
             });
 
         builder.AddOpenTelemetryExporters();

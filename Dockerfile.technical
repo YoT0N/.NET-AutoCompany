@@ -1,0 +1,32 @@
+﻿# ─── Stage 1: Build ───────────────────────────────────────────────
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /repo
+
+COPY nuget.config ./
+COPY ServiceDefaults/ServiceDefaults.csproj                                             ServiceDefaults/
+COPY src/Services/TechnicalService/TechnicalService.API/TechnicalService.API.csproj     src/Services/TechnicalService/TechnicalService.API/
+COPY src/Services/TechnicalService/TechnicalService.Application/TechnicalService.Bll.csproj  src/Services/TechnicalService/TechnicalService.Application/
+COPY src/Services/TechnicalService/TechnicalService.Infrastructure/TechnicalService.Dal.csproj src/Services/TechnicalService/TechnicalService.Infrastructure/
+COPY src/Services/TechnicalService/TechnicalService.Core/TechnicalService.Domain.csproj      src/Services/TechnicalService/TechnicalService.Core/
+
+RUN dotnet restore src/Services/TechnicalService/TechnicalService.API/TechnicalService.API.csproj
+
+COPY ServiceDefaults/    ServiceDefaults/
+COPY src/Services/TechnicalService/  src/Services/TechnicalService/
+
+RUN dotnet publish src/Services/TechnicalService/TechnicalService.API/TechnicalService.API.csproj \
+    -c Release -o /app/publish --no-restore \
+    -p:IsTransformWebConfigDisabled=true && \
+    ls /app/publish/*.dll
+
+# ─── Stage 2: Runtime ─────────────────────────────────────────────
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+
+COPY --from=build /app/publish .
+
+ENV ASPNETCORE_ENVIRONMENT=Production
+ENV ASPNETCORE_URLS=http://+:8080
+
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "TechnicalService.API.dll"]
