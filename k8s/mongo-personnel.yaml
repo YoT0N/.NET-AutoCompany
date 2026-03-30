@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-personnel
+  labels:
+    app: mongo-personnel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-personnel
+  template:
+    metadata:
+      labels:
+        app: mongo-personnel
+    spec:
+      containers:
+        - name: mongo-personnel
+          image: mongo:7.0
+          ports:
+            - containerPort: 27017
+          readinessProbe:
+            exec:
+              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 5
+          livenessProbe:
+            exec:
+              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            failureThreshold: 5
+          volumeMounts:
+            - name: mongo-personnel-storage
+              mountPath: /data/db
+      volumes:
+        - name: mongo-personnel-storage
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-personnel
+spec:
+  selector:
+    app: mongo-personnel
+  ports:
+    - port: 27017
+      targetPort: 27017
+  type: ClusterIP

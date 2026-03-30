@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: personnel-api
+  labels:
+    app: personnel-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: personnel-api
+  template:
+    metadata:
+      labels:
+        app: personnel-api
+    spec:
+      containers:
+        - name: personnel-api
+          image: personnel-api:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "Production"
+            - name: ASPNETCORE_URLS
+              value: "http://+:8080"
+            - name: ConnectionStrings__MongoDb
+              value: "mongodb://mongo-personnel:27017"
+            - name: MongoDB__DatabaseName
+              value: "PersonnelServiceDb"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: personnel-api
+spec:
+  selector:
+    app: personnel-api
+  ports:
+    - port: 80
+      targetPort: 8080
+  type: ClusterIP

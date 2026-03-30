@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-technical
+  labels:
+    app: mysql-technical
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-technical
+  template:
+    metadata:
+      labels:
+        app: mysql-technical
+    spec:
+      containers:
+        - name: mysql-technical
+          image: mysql:8.0
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "windowcloud"
+            - name: MYSQL_DATABASE
+              value: "transportservicedb"
+          readinessProbe:
+            exec:
+              command: ["mysqladmin", "ping", "-h", "localhost", "-pwindowcloud"]
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            failureThreshold: 5
+          livenessProbe:
+            exec:
+              command: ["mysqladmin", "ping", "-h", "localhost", "-pwindowcloud"]
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            failureThreshold: 5
+          volumeMounts:
+            - name: mysql-technical-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-technical-storage
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-technical
+spec:
+  selector:
+    app: mysql-technical
+  ports:
+    - port: 3306
+      targetPort: 3306
+  type: ClusterIP
