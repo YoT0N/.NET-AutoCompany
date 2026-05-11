@@ -21,16 +21,16 @@ spec:
             - containerPort: 27017
           readinessProbe:
             exec:
-              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
-            initialDelaySeconds: 15
-            periodSeconds: 10
-            failureThreshold: 5
+            command: ["mongosh", "--eval", "db.adminCommand('ping')"]
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            failureThreshold: 10
           livenessProbe:
             exec:
-              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
-            initialDelaySeconds: 30
-            periodSeconds: 15
-            failureThreshold: 5
+            command: ["mongosh", "--eval", "db.adminCommand('ping')"]
+            initialDelaySeconds: 120
+            periodSeconds: 20
+            failureThreshold: 10
           volumeMounts:
             - name: mongo-personnel-storage
               mountPath: /data/db
