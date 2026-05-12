@@ -55,7 +55,8 @@ metadata:
 spec:
   selector:
     app: gateway
-  ports:
-    - port: 80
+    ports:
+    - name: http
+      port: 80
       targetPort: 8080
   type: NodePort
